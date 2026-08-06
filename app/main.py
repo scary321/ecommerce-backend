@@ -1,5 +1,5 @@
-from fastapi import FastAPI , Depends
-from sqlalchemy.orm import Session ,status
+from fastapi import FastAPI , Depends,status
+from sqlalchemy.orm import Session 
 from app.schemas import UserResponse
 from app.schemas import UserCreate
 from app.database import get_db
