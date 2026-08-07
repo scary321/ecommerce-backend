@@ -1,170 +1,271 @@
-# 🛒 E-commerce Backend API
+# 🛒 E-Commerce Backend API
 
-A production-ready E-commerce Backend built with **FastAPI**, **PostgreSQL**, **SQLAlchemy**, and **Alembic**. This project is being developed from scratch following backend engineering best practices, including authentication, database migrations, password hashing, and RESTful API design.
+A backend API for an e-commerce application built with **FastAPI**.
+The project is being developed step-by-step while learning backend development, database integration, authentication, testing, and deployment.
+
+## 📌 Project Overview
+
+This project focuses on building a production-style e-commerce backend from scratch using Python and FastAPI.
+
+The goal is to implement the core backend features required for an e-commerce platform, including:
+
+- User registration and authentication
+- Database management
+- JWT-based authorization
+- Product management
+- Orders
+- User permissions
+- API validation
+- Testing
+- Deployment
 
 ---
 
-## 🚀 Tech Stack
+## 🛠️ Tech Stack
 
-- **FastAPI** – High-performance Python web framework
-- **PostgreSQL** – Relational database
-- **SQLAlchemy** – ORM for database operations
-- **Alembic** – Database migrations
-- **Pydantic** – Data validation and serialization
-- **Passlib (bcrypt)** – Secure password hashing
-- **Uvicorn** – ASGI server
-- **Python 3.13**
+### Backend
+
+- Python
+- FastAPI
+- Uvicorn
+- SQLAlchemy
+- Pydantic
+
+### Database
+
+- PostgreSQL
+
+### Authentication & Security
+
+- JWT
+- OAuth2 Bearer Authentication
+- Password Hashing
+- Password Verification
+
+### Development & Testing
+
+- Swagger / OpenAPI
+- Pytest
+- Virtual Environment
+- Git & GitHub
+
+### Planned / Learning
+
+- Docker
+- GitHub Actions
+- Deployment
 
 ---
 
-## ✨ Features Implemented
+## ✅ Completed
 
-### ✅ Project Setup
+### User Management
 
-- FastAPI application structure
-- Environment variable configuration
-- PostgreSQL database connection
-- SQLAlchemy ORM setup
-- Dependency Injection with `Depends(get_db)`
+- [x] User registration
+- [x] User database model
+- [x] User response schema
+- [x] Password hashing
+- [x] Password verification
+- [x] Get user by ID
 
-### ✅ Database
+### Authentication
 
-- User model created
-- Alembic configured
-- Initial database migration
-- Automatic timestamps (`created_at`)
+- [x] Login endpoint
+- [x] JWT access token generation
+- [x] JWT expiration
+- [x] JWT decoding
+- [x] `OAuth2PasswordBearer`
+- [x] `OAuth2PasswordRequestForm`
+- [x] `get_current_user()` dependency
+- [x] Protected endpoints
+- [x] Swagger OAuth2 authentication
 
-### ✅ User Management
+### API
 
-- User registration endpoint
-- Request validation using Pydantic
-- Response schemas to hide sensitive information
-- Secure password hashing using bcrypt
-- Passwords are never stored in plain text
+- [x] FastAPI application setup
+- [x] Database session dependency
+- [x] Pydantic request/response validation
+- [x] HTTP status codes
+- [x] Error handling for authentication and missing users
+
+---
+
+## 🚧 Currently Working On
+
+- [ ] User authorization
+- [ ] User ownership/permissions
+- [ ] Product CRUD
+- [ ] Product categories
+- [ ] Shopping cart
+- [ ] Orders
+- [ ] Order items
+- [ ] Advanced API validation
+- [ ] Automated tests
+
+---
+
+## ❌ Not Implemented Yet
+
+The following features are planned but have not been implemented yet:
+
+- Product management
+- Cart system
+- Checkout system
+- Order management
+- Payment integration
+- Admin roles
+- Role-based access control
+- Product search and filtering
+- Pagination
+- Email verification
+- Password reset
+- Refresh tokens
+- Production deployment
+- Docker production setup
+- CI/CD pipeline
+
+---
+
+## 🔐 Current Authentication Flow
+
+```text
+Register User
+      ↓
+Hash Password
+      ↓
+Store User in PostgreSQL
+      ↓
+Login
+      ↓
+Verify Password
+      ↓
+Generate JWT
+      ↓
+Bearer Token
+      ↓
+Protected Endpoint
+      ↓
+Get Current User
+```
+
+---
+
+## 📚 Learning Progress
+
+| Area               | Status |
+| ------------------ | ------ |
+| Python Backend     | ✅     |
+| FastAPI Basics     | ✅     |
+| SQLAlchemy         | ✅     |
+| PostgreSQL         | ✅     |
+| User Registration  | ✅     |
+| Password Hashing   | ✅     |
+| JWT Authentication | ✅     |
+| OAuth2             | ✅     |
+| Protected Routes   | ✅     |
+| Authorization      | 🚧     |
+| Product APIs       | ⏳     |
+| Cart               | ⏳     |
+| Orders             | ⏳     |
+| Testing            | ⏳     |
+| Docker             | ⏳     |
+| Deployment         | ⏳     |
+| CI/CD              | ⏳     |
 
 ---
 
 ## 📂 Project Structure
 
 ```text
-app/
-├── config.py          # Environment variables
-├── database.py        # Database engine & session
-├── main.py            # FastAPI application
-├── models.py          # SQLAlchemy models
-├── schemas.py         # Pydantic schemas
-├── utils.py           # Password hashing utilities
-└── ...
-
-alembic/
-├── versions/          # Migration files
-└── env.py
-
-requirements.txt
-README.md
+E-commerce backend/
+│
+├── app/
+│   ├── main.py
+│   ├── models.py
+│   ├── schemas.py
+│   ├── database.py
+│   ├── auth.py
+│   └── utils.py
+│
+├── tests/
+│
+├── .env
+├── .gitignore
+├── requirements.txt
+└── README.md
 ```
+
+> Project structure may change as development continues.
 
 ---
 
-## 🛠 Installation
+## 🚀 Running Locally
 
-### Clone the repository
-
-```bash
-git clone https://github.com/scary321/ecommerce-backend.git
-cd ecommerce-backend
-```
-
-### Create a virtual environment
+Create and activate a virtual environment:
 
 ```bash
 python -m venv venv
 ```
 
-### Activate the environment
-
-**Windows**
+Activate on Windows:
 
 ```bash
 venv\Scripts\activate
 ```
 
-### Install dependencies
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
-## ⚙ Environment Variables
-
-Create a `.env` file in the project root.
-
-```env
-DATABASE_HOSTNAME=localhost
-DATABASE_PORT=5432
-DATABASE_NAME=your_database
-DATABASE_USERNAME=your_username
-DATABASE_PASSWORD=your_password
-
-SECRET_KEY=your_secret_key
-ALGORITHM=HS256
-ACCESS_TOKEN_EXPIRE_MINUTES=30
-```
-
----
-
-## ▶ Running the Project
+Start the development server:
 
 ```bash
 uvicorn app.main:app --reload
 ```
 
-API Documentation:
+Open Swagger:
 
-- Swagger UI: `http://127.0.0.1:8000/docs`
-- ReDoc: `http://127.0.0.1:8000/redoc`
-
----
-
-## 📌 Current API Endpoints
-
-| Method | Endpoint | Description         |
-| ------ | -------- | ------------------- |
-| GET    | `/`      | Health check        |
-| POST   | `/users` | Register a new user |
+```text
+http://127.0.0.1:8000/docs
+```
 
 ---
 
-## 📈 Roadmap
+## 📈 Project Status
 
-- ✅ User Registration
-- 🔄 User Login (JWT Authentication)
-- ⏳ Protected Routes
-- ⏳ Product APIs
-- ⏳ Category APIs
-- ⏳ Shopping Cart
-- ⏳ Orders
-- ⏳ Payment Integration
-- ⏳ Unit Testing
-- ⏳ Docker
-- ⏳ CI/CD
-- ⏳ Deployment
+**Development Status: 🟡 In Progress**
+
+The core backend foundation and user authentication system are working.
+The next major step is implementing **authorization and user permissions**, followed by the main e-commerce functionality.
 
 ---
 
-## 🔒 Security
+## 🎯 Next Goal
 
-- Passwords hashed using bcrypt
-- Request validation with Pydantic
-- Response models prevent sensitive data exposure
-- Environment variables for secrets and database credentials
+### Day 5
 
----
+**Authorization & User Permissions 🔒**
 
-## 👨‍💻 Author
+After that, the project will move toward:
 
-**Priyanshu Rathore**
-
-GitHub: https://github.com/scary321
+```text
+Authentication
+      ↓
+Authorization
+      ↓
+Products
+      ↓
+Cart
+      ↓
+Orders
+      ↓
+Payments
+      ↓
+Testing
+      ↓
+Docker
+      ↓
+Deployment
+```
