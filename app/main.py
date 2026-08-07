@@ -7,6 +7,8 @@ from app.models import UsersTable
 from app import models
 from jose import JWTError,jwt
 from .config import settings
+from app.auth import get_current_user
+from fastapi.security import OAuth2PasswordRequestForm
 
 
 app = FastAPI()
@@ -30,9 +32,12 @@ def create_user(user: UserCreate,db: Session = Depends(get_db)):
     return new_user
 
 @app.post("/login",response_model=LoginResponse)
-def login_user(user_credential:UserLogin,db:Session = Depends(get_db)):
+def login_user(user_credential: OAuth2PasswordRequestForm = Depends(),
+    db: Session = Depends(get_db)):
     
-    user = db.query(models.UsersTable).filter(models.UsersTable.email == user_credential.email).first()
+    user = db.query(models.UsersTable).filter(
+    models.UsersTable.email == user_credential.username
+).first()
     
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
@@ -41,3 +46,15 @@ def login_user(user_credential:UserLogin,db:Session = Depends(get_db)):
     
     access_token=create_access_token(data={"user_id":user.id})
     return{"access_token":access_token,"token_type":"bearer"}
+
+@app.get("/users/{id}",response_model=UserResponse)
+def get_user(id:int, current_user=Depends(get_current_user),db:Session = Depends(get_db)):
+    user = db.query(models.UsersTable).filter(models.UsersTable.id == id).first()
+    
+    if not user:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="User not found"
+        )
+
+    return user
