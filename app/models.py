@@ -11,3 +11,4 @@ class UsersTable(Base):
     email = Column(String(100), unique=True, nullable=False)
     password_hash = Column(String(128), nullable=False)
     created_at = Column(DateTime, default=func.now(), nullable=False)
+    role = Column(String(15),default="user")
