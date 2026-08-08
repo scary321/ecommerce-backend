@@ -1,3 +1,4 @@
+from typing import Optional
 from pydantic import BaseModel, ConfigDict, EmailStr
 
 
@@ -20,4 +21,8 @@ class UserLogin(BaseModel):
 class LoginResponse(BaseModel):
     access_token:str
     token_type:str
+    
+class UserUpdate(BaseModel):
+    email: Optional[EmailStr]
+    password:Optional[str]
     
