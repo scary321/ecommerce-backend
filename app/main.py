@@ -3,8 +3,8 @@ from sqlalchemy.orm import Session
 from app.schemas import UserResponse ,UserCreate,UserLogin,LoginResponse,UserUpdate,AdminRoleUpdate
 from app.database import get_db
 from app.utils import hash_password,verify_password,create_access_token
-from app.models import UsersTable
-from app import models
+from app.models import user
+from app.models.user import UsersTable
 from jose import JWTError,jwt
 from .config import settings
 from app.auth import get_current_user,require_admin
@@ -36,9 +36,8 @@ def create_user(user: UserCreate,db: Session = Depends(get_db)):
 def login_user(user_credential: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)):
     
-    user = db.query(models.UsersTable).filter(
-    models.UsersTable.email == user_credential.username
-).first()
+    user = db.query(UsersTable).filter(
+    UsersTable.email == user_credential.username).first()
     
     if not user:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
@@ -50,7 +49,7 @@ def login_user(user_credential: OAuth2PasswordRequestForm = Depends(),
 
 @app.get("/users/{id}",response_model=UserResponse)
 def get_user(id:int, current_user=Depends(get_current_user),db:Session = Depends(get_db)):
-    user = db.query(models.UsersTable).filter(models.UsersTable.id == id).first()
+    user = db.query(UsersTable).filter(UsersTable.id == id).first()
     
     if not user:
         raise HTTPException(
@@ -67,7 +66,7 @@ def get_user(id:int, current_user=Depends(get_current_user),db:Session = Depends
 def update_user(id:int,user_update: UserUpdate, current_user=Depends(get_current_user),db:Session = Depends(get_db)):
     if (current_user.id != id):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Access denied")
-    user = db.query(models.UsersTable).filter(models.UsersTable.id == id).first()    
+    user = db.query(UsersTable).filter(UsersTable.id == id).first()    
     
     if not user:
             raise HTTPException(
@@ -89,7 +88,7 @@ def delete_user(id:int, current_user=Depends(get_current_user),db:Session = Depe
     if (current_user.id != id):
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Access denied")
     
-    user = db.query(models.UsersTable).filter(models.UsersTable.id == id).first()
+    user = db.query(UsersTable).filter(UsersTable.id == id).first()
     
     if not user:
                 raise HTTPException(
@@ -104,14 +103,14 @@ def delete_user(id:int, current_user=Depends(get_current_user),db:Session = Depe
 @app.get("/users",response_model=list[UserResponse])
 def admin_user(current_user=Depends(require_admin),db:Session = Depends(get_db)):
     
-    users = db.query(models.UsersTable).all()
+    users = db.query(UsersTable).all()
     
     return users
 
 @app.put("/users/{id}",response_model=UserResponse)
 def admin_update_user(id:int,role_update:AdminRoleUpdate,current_user=Depends(require_admin),db:Session = Depends(get_db)):
     
-    user = db.query(models.UsersTable).filter(models.UsersTable.id == id).first()
+    user = db.query(UsersTable).filter(UsersTable.id == id).first()
 
     if not user:
                 raise HTTPException(
@@ -129,7 +128,7 @@ def admin_update_user(id:int,role_update:AdminRoleUpdate,current_user=Depends(re
 @app.delete("/users/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def admin_delete_user(id: int, current_user=Depends(require_admin),db:Session = Depends(get_db)):
     
-    user = db.query(models.UsersTable).filter(models.UsersTable.id == id).first()
+    user = db.query(UsersTable).filter(UsersTable.id == id).first()
     
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="User not found")

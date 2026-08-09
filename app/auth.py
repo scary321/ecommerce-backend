@@ -3,8 +3,9 @@ from fastapi import Depends,HTTPException,status,Depends
 from app.database import get_db
 from sqlalchemy.orm import Session 
 from jose import JWTError,jwt
-from app import models
+from app.models import user
 from .config import settings
+from app.models.user import UsersTable
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/login")
 
@@ -17,7 +18,7 @@ def get_current_user(token:str=Depends(oauth2_scheme),db: Session = Depends(get_
     if user_id is None:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
     
-    user = db.query(models.UsersTable).filter(models.UsersTable.id == user_id).first()
+    user = db.query(UsersTable).filter(UsersTable.id == user_id).first()
     
     if not user:
             raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED)
