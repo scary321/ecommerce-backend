@@ -27,3 +27,6 @@ class UserUpdate(BaseModel):
     email: Optional[EmailStr]
     password:Optional[str]
     
+class AdminRoleUpdate(BaseModel):
+    role:str
+    

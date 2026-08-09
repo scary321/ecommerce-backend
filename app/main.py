@@ -125,3 +125,19 @@ def admin_update_user(id:int,role_update:AdminRoleUpdate,current_user=Depends(re
     db.refresh(user)
         
     return user
+
+@app.delete("/users/{id}",status_code=status.HTTP_204_NO_CONTENT)
+def admin_delete_user(id:int,current_user=Depends(require_admin),db:Session = Depends(get_db)):
+    
+    user = db.query(models.UsersTable).filter(models.UsersTable.id == id).first()
+    
+    if not user:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found"
+                )
+    
+    db.delete(user)
+    db.commit()
+        
+    return
