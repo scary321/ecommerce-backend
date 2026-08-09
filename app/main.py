@@ -1,6 +1,6 @@
 from fastapi import FastAPI , Depends, status ,HTTPException
 from sqlalchemy.orm import Session 
-from app.schemas import UserResponse ,UserCreate,UserLogin,LoginResponse,UserUpdate
+from app.schemas import UserResponse ,UserCreate,UserLogin,LoginResponse,UserUpdate,AdminRoleUpdate
 from app.database import get_db
 from app.utils import hash_password,verify_password,create_access_token
 from app.models import UsersTable
@@ -107,3 +107,21 @@ def admin_user(current_user=Depends(require_admin),db:Session = Depends(get_db))
     users = db.query(models.UsersTable).all()
     
     return users
+
+@app.put("/users/{id}",response_model=UserResponse)
+def admin_update_user(id:int,role_update:AdminRoleUpdate,current_user=Depends(require_admin),db:Session = Depends(get_db)):
+    
+    user = db.query(models.UsersTable).filter(models.UsersTable.id == id).first()
+
+    if not user:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="User not found"
+                )
+    
+    user.role = role_update.role
+    
+    db.commit()
+    db.refresh(user)
+        
+    return user
