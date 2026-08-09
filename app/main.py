@@ -7,7 +7,7 @@ from app.models import UsersTable
 from app import models
 from jose import JWTError,jwt
 from .config import settings
-from app.auth import get_current_user
+from app.auth import get_current_user,require_admin
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import update
 
@@ -100,3 +100,10 @@ def delete_user(id:int, current_user=Depends(get_current_user),db:Session = Depe
     db.commit()
     
     return
+
+@app.get("/users",response_model=list[UserResponse])
+def admin_user(current_user=Depends(require_admin),db:Session = Depends(get_db)):
+    
+    users = db.query(models.UsersTable).all()
+    
+    return users
