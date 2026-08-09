@@ -1,9 +1,10 @@
 from logging.config import fileConfig
 from app.database import Base
 from app.config import settings
-import app.models 
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
+from app.models.user import UsersTable
+from app.models.products import ProductTable
 
 from alembic import context
 

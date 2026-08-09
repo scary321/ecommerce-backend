@@ -10,6 +10,7 @@ from .config import settings
 from app.auth import get_current_user,require_admin
 from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy import update
+from app.models.products import ProductTable
 
 
 app = FastAPI()
