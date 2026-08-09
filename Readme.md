@@ -1,259 +1,338 @@
-# 🛒 E-Commerce Backend API
-
-A backend API for an e-commerce application built with **FastAPI**.
-The project is being developed step-by-step while learning backend development, database integration, authentication, testing, and deployment.
+# E-Commerce Backend — Development Progress
 
 ## 📌 Project Overview
 
-This project focuses on building a production-style e-commerce backend from scratch using Python and FastAPI.
+This project is a backend API for an e-commerce application built with **FastAPI, PostgreSQL, SQLAlchemy, Pydantic, Alembic, and JWT authentication**.
 
-The goal is to implement the core backend features required for an e-commerce platform, including:
-
-- User registration and authentication
-- Database management
-- JWT-based authorization
-- Product management
-- Orders
-- User permissions
-- API validation
-- Testing
-- Deployment
+The goal is to build a production-style e-commerce backend from scratch while learning backend development concepts such as authentication, authorization, database design, API architecture, testing, and deployment.
 
 ---
 
-## 🛠️ Tech Stack
+# 🚀 Development Progress
 
-### Backend
+## Day 1 — Project Setup & FastAPI Fundamentals
 
-- Python
-- FastAPI
-- Uvicorn
-- SQLAlchemy
-- Pydantic
+### Implemented
 
-### Database
+- FastAPI project structure
+- Application setup
+- API routes
+- Request and response handling
+- Basic API testing with Swagger/OpenAPI
+- PostgreSQL database connection
+- SQLAlchemy setup
+- Database session dependency
 
-- PostgreSQL
+### Learned
 
-### Authentication & Security
-
-- JWT
-- OAuth2 Bearer Authentication
-- Password Hashing
-- Password Verification
-
-### Development & Testing
-
-- Swagger / OpenAPI
-- Pytest
-- Virtual Environment
-- Git & GitHub
-
-### Planned / Learning
-
-- Docker
-- GitHub Actions
-- Deployment
+- FastAPI fundamentals
+- Dependency injection
+- REST API basics
+- SQLAlchemy basics
+- PostgreSQL connection
+- API request/response flow
 
 ---
 
-## ✅ Completed
+## Day 2 — Database & User System
 
-### User Management
+### Implemented
 
-- [x] User registration
-- [x] User database model
-- [x] User response schema
-- [x] Password hashing
-- [x] Password verification
-- [x] Get user by ID
+- Users database model
+- User registration
+- User response schemas
+- Password hashing
+- Database queries using SQLAlchemy
+- User creation endpoint
+
+### Learned
+
+- SQLAlchemy models
+- Pydantic schemas
+- Password security
+- Database CRUD operations
+- Separation between database models and API schemas
+
+---
+
+## Day 3 — Authentication
+
+### Implemented
+
+- User login
+- OAuth2 password flow
+- JWT token generation
+- JWT token validation
+- Current-user dependency
+- Protected endpoints
+
+### Learned
+
+- Authentication vs authorization
+- JWT structure
+- Access tokens
+- OAuth2PasswordBearer
+- FastAPI dependencies
+- Protecting API routes
+
+---
+
+## Day 4 — User Account Management
+
+### Implemented
+
+- Get current user
+- Update user information
+- Password updates
+- Email updates
+- User account deletion
+- Proper HTTP status codes
+- Authentication-based access control
+
+### Learned
+
+- Partial updates
+- `Optional` Pydantic fields
+- `403 Forbidden`
+- `404 Not Found`
+- `204 No Content`
+- Secure user-specific operations
+
+---
+
+# Day 5 — Role-Based Authorization & Admin Management
+
+## 🎯 Objective
+
+Upgrade the authentication system into a **role-based authorization system** and introduce administrator functionality.
+
+## Implemented
+
+### User Roles
+
+Added a `role` field to the users table.
+
+Supported roles:
+
+- `user`
+- `admin`
+
+New users receive the `user` role by default.
+
+### Database Migration
+
+Created and applied an Alembic migration to add the role column.
+
+Migration successfully applied using:
+
+```bash
+alembic upgrade head
+```
+
+### Admin Authorization
+
+Implemented an admin authorization dependency:
+
+```text
+JWT
+ ↓
+get_current_user()
+ ↓
+Current User
+ ↓
+Check role
+ ↓
+Admin → Allow
+User → 403
+```
+
+### Admin User Management
+
+Implemented:
+
+```text
+GET    /users
+PUT    /users/{id}
+DELETE /users/{id}
+```
+
+Admins can:
+
+- View all users
+- Change a user's role
+- Delete normal users
+
+Security restrictions:
+
+- Normal users cannot access admin endpoints
+- Admins cannot delete themselves
+- Admins cannot delete another admin
+
+### API Status Codes
+
+Implemented and tested:
+
+| Status           | Usage                  |
+| ---------------- | ---------------------- |
+| `200 OK`         | Successful requests    |
+| `201 Created`    | User creation          |
+| `204 No Content` | Successful deletion    |
+| `403 Forbidden`  | Unauthorized operation |
+| `404 Not Found`  | Resource doesn't exist |
+
+### Debugging
+
+Fixed duplicate route definitions for:
+
+```text
+DELETE /users/{id}
+```
+
+This prevented conflicting user-delete and admin-delete behavior.
+
+---
+
+# 📊 Current Backend Architecture
+
+```text
+Client
+  ↓
+FastAPI
+  ↓
+Authentication
+  ↓
+JWT
+  ↓
+get_current_user()
+  ↓
+Authorization
+  ↓
+require_admin()
+  ↓
+API Routes
+  ↓
+SQLAlchemy
+  ↓
+PostgreSQL
+```
+
+---
+
+# ✅ Current Features
 
 ### Authentication
 
-- [x] Login endpoint
-- [x] JWT access token generation
-- [x] JWT expiration
-- [x] JWT decoding
-- [x] `OAuth2PasswordBearer`
-- [x] `OAuth2PasswordRequestForm`
-- [x] `get_current_user()` dependency
-- [x] Protected endpoints
-- [x] Swagger OAuth2 authentication
+- [x] User registration
+- [x] Password hashing
+- [x] User login
+- [x] JWT authentication
+- [x] Protected routes
+- [x] Current-user dependency
 
-### API
+### User Management
 
-- [x] FastAPI application setup
-- [x] Database session dependency
-- [x] Pydantic request/response validation
-- [x] HTTP status codes
-- [x] Error handling for authentication and missing users
+- [x] Get user
+- [x] Update user
+- [x] Delete user
+- [x] Email update
+- [x] Password update
+
+### Authorization
+
+- [x] User roles
+- [x] Admin role
+- [x] Admin dependency
+- [x] Admin-only routes
+- [x] User/admin permissions
+
+### Admin Management
+
+- [x] View all users
+- [x] Update user role
+- [x] Delete normal users
+- [x] Prevent admin self-deletion
+- [x] Prevent admin-to-admin deletion
+
+### Database
+
+- [x] PostgreSQL
+- [x] SQLAlchemy
+- [x] Alembic migrations
+- [x] User table
+- [x] Role column
 
 ---
 
-## 🚧 Currently Working On
+# 🔜 Next — Day 6
 
-- [ ] User authorization
-- [ ] User ownership/permissions
-- [ ] Product CRUD
+## Product Management
+
+The next major feature is the **Product system**, which will move the project from mainly user/authentication functionality into actual e-commerce functionality.
+
+### Planned
+
+- [ ] Create Product model
+- [ ] Product database table
+- [ ] Alembic migration
+- [ ] Product schemas
+- [ ] Create product endpoint
+- [ ] Get all products
+- [ ] Get single product
+- [ ] Update product
+- [ ] Delete product
+- [ ] Admin-only product management
+- [ ] Product validation
+- [ ] Product stock management
 - [ ] Product categories
-- [ ] Shopping cart
-- [ ] Orders
-- [ ] Order items
-- [ ] Advanced API validation
-- [ ] Automated tests
 
----
-
-## ❌ Not Implemented Yet
-
-The following features are planned but have not been implemented yet:
-
-- Product management
-- Cart system
-- Checkout system
-- Order management
-- Payment integration
-- Admin roles
-- Role-based access control
-- Product search and filtering
-- Pagination
-- Email verification
-- Password reset
-- Refresh tokens
-- Production deployment
-- Docker production setup
-- CI/CD pipeline
-
----
-
-## 🔐 Current Authentication Flow
+### Planned API
 
 ```text
-Register User
-      ↓
-Hash Password
-      ↓
-Store User in PostgreSQL
-      ↓
-Login
-      ↓
-Verify Password
-      ↓
-Generate JWT
-      ↓
-Bearer Token
-      ↓
-Protected Endpoint
-      ↓
-Get Current User
+POST   /products
+GET    /products
+GET    /products/{id}
+PUT    /products/{id}
+DELETE /products/{id}
 ```
 
----
-
-## 📚 Learning Progress
-
-| Area               | Status |
-| ------------------ | ------ |
-| Python Backend     | ✅     |
-| FastAPI Basics     | ✅     |
-| SQLAlchemy         | ✅     |
-| PostgreSQL         | ✅     |
-| User Registration  | ✅     |
-| Password Hashing   | ✅     |
-| JWT Authentication | ✅     |
-| OAuth2             | ✅     |
-| Protected Routes   | ✅     |
-| Authorization      | 🚧     |
-| Product APIs       | ⏳     |
-| Cart               | ⏳     |
-| Orders             | ⏳     |
-| Testing            | ⏳     |
-| Docker             | ⏳     |
-| Deployment         | ⏳     |
-| CI/CD              | ⏳     |
-
----
-
-## 📂 Project Structure
+### Planned Permissions
 
 ```text
-E-commerce backend/
-│
-├── app/
-│   ├── main.py
-│   ├── models.py
-│   ├── schemas.py
-│   ├── database.py
-│   ├── auth.py
-│   └── utils.py
-│
-├── tests/
-│
-├── .env
-├── .gitignore
-├── requirements.txt
-└── README.md
-```
+                    USER        ADMIN
 
-> Project structure may change as development continues.
-
----
-
-## 🚀 Running Locally
-
-Create and activate a virtual environment:
-
-```bash
-python -m venv venv
-```
-
-Activate on Windows:
-
-```bash
-venv\Scripts\activate
-```
-
-Install dependencies:
-
-```bash
-pip install -r requirements.txt
-```
-
-Start the development server:
-
-```bash
-uvicorn app.main:app --reload
-```
-
-Open Swagger:
-
-```text
-http://127.0.0.1:8000/docs
+View products        ✅          ✅
+Create product       ❌          ✅
+Update product       ❌          ✅
+Delete product       ❌          ✅
 ```
 
 ---
 
-## 📈 Project Status
+# 🛠️ Tech Stack
 
-**Development Status: 🟡 In Progress**
-
-The core backend foundation and user authentication system are working.
-The next major step is implementing **authorization and user permissions**, followed by the main e-commerce functionality.
+- **Python**
+- **FastAPI**
+- **PostgreSQL**
+- **SQLAlchemy**
+- **Pydantic**
+- **Alembic**
+- **JWT**
+- **OAuth2**
+- **Passlib / Password Hashing**
+- **Swagger / OpenAPI**
 
 ---
 
-## 🎯 Next Goal
+# 🎯 Project Goal
 
-### Day 5
-
-**Authorization & User Permissions 🔒**
-
-After that, the project will move toward:
+Build a complete e-commerce backend from scratch with:
 
 ```text
 Authentication
       ↓
 Authorization
+      ↓
+Users
       ↓
 Products
       ↓
@@ -267,5 +346,9 @@ Testing
       ↓
 Docker
       ↓
+CI/CD
+      ↓
 Deployment
 ```
+
+The project is being developed incrementally, with each development day introducing and testing a new backend concept.
