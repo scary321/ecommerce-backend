@@ -1,6 +1,6 @@
 from fastapi import FastAPI , Depends, status ,HTTPException
 from sqlalchemy.orm import Session 
-from app.schemas import UserResponse ,UserCreate,UserLogin,LoginResponse,UserUpdate,AdminRoleUpdate
+from app.schemas.user import UserResponse ,UserCreate,UserLogin,LoginResponse,UserUpdate,AdminRoleUpdate
 from app.database import get_db
 from app.utils import hash_password,verify_password,create_access_token
 from app.models import user

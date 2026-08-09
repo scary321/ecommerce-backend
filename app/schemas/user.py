@@ -24,8 +24,8 @@ class LoginResponse(BaseModel):
     token_type:str
     
 class UserUpdate(BaseModel):
-    email: Optional[EmailStr]
-    password:Optional[str]
+    email: Optional[EmailStr] = None
+    password:Optional[str] = None
     
 class AdminRoleUpdate(BaseModel):
     role:str
