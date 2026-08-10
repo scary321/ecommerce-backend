@@ -31,3 +31,15 @@ def get_all_products(current_user=Depends(get_current_user),db:Session = Depends
     products = db.query(ProductTable).all()
         
     return products
+
+@product_router.get("/products/{id}",response_model=ProductResponse)
+def get_product(id:int, current_user=Depends(get_current_user),db:Session = Depends(get_db)):
+    product = db.query(ProductTable).filter(ProductTable.id == id).first()
+    
+    if not product:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="product not found"
+        )
+ 
+    return product
