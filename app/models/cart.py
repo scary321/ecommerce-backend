@@ -19,8 +19,7 @@ class CartItemTable(Base):
     __tablename__ = "cart_items"
 
     id = Column(Integer, primary_key=True)
-    cart_id = Column(Integer,ForeignKey("carts.id", ondelete="CASCADE"),nullable=False
-    )
+    cart_id = Column(Integer,ForeignKey("carts.id", ondelete="CASCADE"),nullable=False)
     product_id = Column(Integer,ForeignKey("products.id", ondelete="CASCADE"),nullable=False)
     quantity = Column(Integer, default=1, nullable=False)
 

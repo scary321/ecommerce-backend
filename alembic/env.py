@@ -5,6 +5,7 @@ from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 from app.models.user import UsersTable
 from app.models.products import ProductTable
+from app.models.cart import CartTable, CartItemTable
 
 from alembic import context
 
