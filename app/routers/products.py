@@ -64,3 +64,15 @@ def update_product(id:int,product_update: ProductUpdate, current_user=Depends(re
     db.refresh(product)
         
     return product
+
+@product_router.delete("/products/{id}", status_code=status.HTTP_204_NO_CONTENT)
+def admin_delete_product(id: int, current_user=Depends(require_admin),db:Session = Depends(get_db)):
+    product = db.query(ProductTable).filter(ProductTable.id == id).first()
+        
+    if not product:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="product not found")
+       
+    db.delete(product)
+    db.commit()
+    
+    return
