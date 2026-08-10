@@ -3,7 +3,7 @@ from app.config import settings
 from fastapi import APIRouter , Depends, status ,HTTPException
 from sqlalchemy.orm import Session 
 from app.schemas.product import ProductCreate,ProductResponse,ProductUpdate
-from app.auth import require_admin
+from app.auth import require_admin, get_current_user
 from app.models.products import ProductTable
 
 
@@ -24,3 +24,10 @@ def create_product(product: ProductCreate,current_user=Depends(require_admin),db
     db.refresh(new_product)
     
     return new_product
+
+@product_router.get("/products",response_model=list[ProductResponse])
+def get_all_products(current_user=Depends(get_current_user),db:Session = Depends(get_db)):
+    
+    products = db.query(ProductTable).all()
+        
+    return products
