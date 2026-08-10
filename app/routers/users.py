@@ -11,14 +11,14 @@ from app.auth import get_current_user,require_admin
 from fastapi.security import OAuth2PasswordRequestForm
 
 
-router = APIRouter()
+user_router = APIRouter()
 
-@router.get("/")
+@user_router.get("/")
 def root():
     return {"message": "database connection successful!"}
 
 
-@router.post("/users",status_code=status.HTTP_201_CREATED,response_model=UserResponse)
+@user_router.post("/users",status_code=status.HTTP_201_CREATED,response_model=UserResponse)
 def create_user(user: UserCreate,db: Session = Depends(get_db)):
     new_user = UsersTable(
         username=user.username,
@@ -31,7 +31,7 @@ def create_user(user: UserCreate,db: Session = Depends(get_db)):
 
     return new_user
 
-@router.post("/login",response_model=LoginResponse)
+@user_router.post("/login",response_model=LoginResponse)
 def login_user(user_credential: OAuth2PasswordRequestForm = Depends(),
     db: Session = Depends(get_db)):
     
@@ -46,7 +46,7 @@ def login_user(user_credential: OAuth2PasswordRequestForm = Depends(),
     access_token=create_access_token(data={"user_id":user.id})
     return{"access_token":access_token,"token_type":"bearer"}
 
-@router.get("/users/{id}",response_model=UserResponse)
+@user_router.get("/users/{id}",response_model=UserResponse)
 def get_user(id:int, current_user=Depends(get_current_user),db:Session = Depends(get_db)):
     user = db.query(UsersTable).filter(UsersTable.id == id).first()
     
@@ -61,7 +61,7 @@ def get_user(id:int, current_user=Depends(get_current_user),db:Session = Depends
     
     return user
 
-@router.patch("/users/{id}",response_model=UserResponse)
+@user_router.patch("/users/{id}",response_model=UserResponse)
 def update_user(id:int,user_update: UserUpdate, current_user=Depends(get_current_user),db:Session = Depends(get_db)):
     if (current_user.id != id):
             raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Access denied")
@@ -82,7 +82,7 @@ def update_user(id:int,user_update: UserUpdate, current_user=Depends(get_current
     
     return user
 
-@router.delete("/users/me/{id}",status_code=status.HTTP_204_NO_CONTENT)
+@user_router.delete("/users/me/{id}",status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(id:int, current_user=Depends(get_current_user),db:Session = Depends(get_db)):
     if (current_user.id != id):
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Access denied")
@@ -99,14 +99,14 @@ def delete_user(id:int, current_user=Depends(get_current_user),db:Session = Depe
     
     return
 
-@router.get("/users",response_model=list[UserResponse])
+@user_router.get("/users",response_model=list[UserResponse])
 def admin_user(current_user=Depends(require_admin),db:Session = Depends(get_db)):
     
     users = db.query(UsersTable).all()
     
     return users
 
-@router.put("/users/{id}",response_model=UserResponse)
+@user_router.put("/users/{id}",response_model=UserResponse)
 def admin_update_user(id:int,role_update:AdminRoleUpdate,current_user=Depends(require_admin),db:Session = Depends(get_db)):
     
     user = db.query(UsersTable).filter(UsersTable.id == id).first()
@@ -124,7 +124,7 @@ def admin_update_user(id:int,role_update:AdminRoleUpdate,current_user=Depends(re
         
     return user
 
-@router.delete("/users/{id}", status_code=status.HTTP_204_NO_CONTENT)
+@user_router.delete("/users/{id}", status_code=status.HTTP_204_NO_CONTENT)
 def admin_delete_user(id: int, current_user=Depends(require_admin),db:Session = Depends(get_db)):
     
     user = db.query(UsersTable).filter(UsersTable.id == id).first()
