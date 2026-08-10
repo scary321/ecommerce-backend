@@ -42,4 +42,25 @@ def get_product(id:int, current_user=Depends(get_current_user),db:Session = Depe
             detail="product not found"
         )
  
+    return product 
+
+@product_router.patch("/products/{id}",response_model=ProductResponse)
+def update_product(id:int,product_update: ProductUpdate, current_user=Depends(require_admin),db:Session = Depends(get_db)):
+    
+    product = db.query(ProductTable).filter(ProductTable.id == id).first()
+    
+    if not product:
+                raise HTTPException(
+                    status_code=status.HTTP_404_NOT_FOUND,
+                    detail="Product not found"
+                )
+    
+    update_data = product_update.model_dump(exclude_unset=True)
+
+    for field, value in update_data.items():
+        setattr(product, field, value)
+            
+    db.commit()
+    db.refresh(product)
+        
     return product
