@@ -1,354 +1,426 @@
-# E-Commerce Backend — Development Progress
+# E-Commerce Backend — Day 6
 
 ## 📌 Project Overview
 
-This project is a backend API for an e-commerce application built with **FastAPI, PostgreSQL, SQLAlchemy, Pydantic, Alembic, and JWT authentication**.
+This project is a backend API for an e-commerce application built with **FastAPI, PostgreSQL, SQLAlchemy, Alembic, Pydantic, and JWT authentication**.
 
-The goal is to build a production-style e-commerce backend from scratch while learning backend development concepts such as authentication, authorization, database design, API architecture, testing, and deployment.
+The project is being developed step-by-step, with each day adding a new part of the backend.
 
----
-
-# 🚀 Development Progress
-
-## Day 1 — Project Setup & FastAPI Fundamentals
-
-### Implemented
-
-- FastAPI project structure
-- Application setup
-- API routes
-- Request and response handling
-- Basic API testing with Swagger/OpenAPI
-- PostgreSQL database connection
-- SQLAlchemy setup
-- Database session dependency
-
-### Learned
-
-- FastAPI fundamentals
-- Dependency injection
-- REST API basics
-- SQLAlchemy basics
-- PostgreSQL connection
-- API request/response flow
+By the end of Day 6, the backend has a working **user authentication/authorization system** and a complete **Product CRUD system**.
 
 ---
 
-## Day 2 — Database & User System
+# ✅ What Has Been Implemented
 
-### Implemented
+## 👤 User Management
 
-- Users database model
+User functionality has already been implemented.
+
+### User Features
+
 - User registration
-- User response schemas
-- Password hashing
-- Database queries using SQLAlchemy
-- User creation endpoint
-
-### Learned
-
-- SQLAlchemy models
-- Pydantic schemas
-- Password security
-- Database CRUD operations
-- Separation between database models and API schemas
-
----
-
-## Day 3 — Authentication
-
-### Implemented
-
 - User login
-- OAuth2 password flow
-- JWT token generation
-- JWT token validation
-- Current-user dependency
-- Protected endpoints
-
-### Learned
-
-- Authentication vs authorization
-- JWT structure
-- Access tokens
-- OAuth2PasswordBearer
-- FastAPI dependencies
-- Protecting API routes
-
----
-
-## Day 4 — User Account Management
-
-### Implemented
-
+- Password hashing
+- Password verification
+- JWT access tokens
 - Get current user
-- Update user information
-- Password updates
-- Email updates
-- User account deletion
-- Proper HTTP status codes
-- Authentication-based access control
-
-### Learned
-
-- Partial updates
-- `Optional` Pydantic fields
-- `403 Forbidden`
-- `404 Not Found`
-- `204 No Content`
-- Secure user-specific operations
-
----
-
-# Day 5 — Role-Based Authorization & Admin Management
-
-## 🎯 Objective
-
-Upgrade the authentication system into a **role-based authorization system** and introduce administrator functionality.
-
-## Implemented
+- Get user by ID
+- Update user
+- Delete own account
+- Admin user listing
+- Admin role updates
+- Admin user deletion
+- Admin authorization
 
 ### User Roles
 
-Added a `role` field to the users table.
-
-Supported roles:
+The application currently supports:
 
 - `user`
 - `admin`
 
-New users receive the `user` role by default.
+Admins have additional permissions over users and products.
 
-### Database Migration
+---
 
-Created and applied an Alembic migration to add the role column.
+# 🔐 Authentication & Authorization
 
-Migration successfully applied using:
+JWT authentication is implemented.
+
+The authentication flow is:
+
+```text
+Login
+  ↓
+Email + Password
+  ↓
+Verify credentials
+  ↓
+Generate JWT
+  ↓
+Client sends Bearer Token
+  ↓
+get_current_user()
+  ↓
+Identify user
+  ↓
+require_admin()
+  ↓
+Check role
+```
+
+### Authorization
+
+Admin-only operations are protected using:
+
+```text
+Depends(require_admin)
+```
+
+Normal users cannot access admin-only operations.
+
+---
+
+# 🛍️ Product Management
+
+Day 6 introduced the Product Management system.
+
+## Product Model
+
+The `products` database table contains:
+
+- `id`
+- `name`
+- `description`
+- `price`
+- `stock`
+- `category`
+- `created_at`
+
+The Product model is separated from the User model.
+
+---
+
+# 📦 Product CRUD
+
+The Product API currently supports complete CRUD operations.
+
+| Method | Endpoint         | Purpose          | Access        |
+| ------ | ---------------- | ---------------- | ------------- |
+| POST   | `/products`      | Create product   | Admin         |
+| GET    | `/products`      | Get all products | Authenticated |
+| GET    | `/products/{id}` | Get one product  | Authenticated |
+| PATCH  | `/products/{id}` | Update product   | Admin         |
+| DELETE | `/products/{id}` | Delete product   | Admin         |
+
+---
+
+## ✅ Create Product
+
+```text
+POST /products
+```
+
+Admins can create products.
+
+Status:
+
+```text
+201 Created
+```
+
+---
+
+## ✅ Get All Products
+
+```text
+GET /products
+```
+
+Authenticated users can retrieve all products.
+
+---
+
+## ✅ Get Product
+
+```text
+GET /products/{id}
+```
+
+Returns a specific product.
+
+If the product doesn't exist:
+
+```text
+404 Product not found
+```
+
+---
+
+## ✅ Update Product
+
+```text
+PATCH /products/{id}
+```
+
+Admins can partially update products.
+
+For example, only changing:
+
+```json
+{
+  "price": 1499
+}
+```
+
+will leave the other product fields unchanged.
+
+Partial updates use:
+
+```text
+model_dump(exclude_unset=True)
+```
+
+---
+
+## ✅ Delete Product
+
+```text
+DELETE /products/{id}
+```
+
+Admins can delete products.
+
+Successful deletion returns:
+
+```text
+204 No Content
+```
+
+---
+
+# 🗄️ Database
+
+PostgreSQL is being used as the main database.
+
+SQLAlchemy is used as the ORM.
+
+Alembic is used for database migrations.
+
+The Product table was successfully created using:
+
+```bash
+alembic revision --autogenerate -m "add products table"
+```
+
+and:
 
 ```bash
 alembic upgrade head
 ```
 
-### Admin Authorization
-
-Implemented an admin authorization dependency:
-
-```text
-JWT
- ↓
-get_current_user()
- ↓
-Current User
- ↓
-Check role
- ↓
-Admin → Allow
-User → 403
-```
-
-### Admin User Management
-
-Implemented:
-
-```text
-GET    /users
-PUT    /users/{id}
-DELETE /users/{id}
-```
-
-Admins can:
-
-- View all users
-- Change a user's role
-- Delete normal users
-
-Security restrictions:
-
-- Normal users cannot access admin endpoints
-- Admins cannot delete themselves
-- Admins cannot delete another admin
-
-### API Status Codes
-
-Implemented and tested:
-
-| Status           | Usage                  |
-| ---------------- | ---------------------- |
-| `200 OK`         | Successful requests    |
-| `201 Created`    | User creation          |
-| `204 No Content` | Successful deletion    |
-| `403 Forbidden`  | Unauthorized operation |
-| `404 Not Found`  | Resource doesn't exist |
-
-### Debugging
-
-Fixed duplicate route definitions for:
-
-```text
-DELETE /users/{id}
-```
-
-This prevented conflicting user-delete and admin-delete behavior.
-
 ---
 
-# 📊 Current Backend Architecture
+# 📁 Current Project Structure
 
 ```text
-Client
-  ↓
-FastAPI
-  ↓
-Authentication
-  ↓
-JWT
-  ↓
-get_current_user()
-  ↓
-Authorization
-  ↓
-require_admin()
-  ↓
-API Routes
-  ↓
-SQLAlchemy
-  ↓
-PostgreSQL
+E-commerce backend/
+│
+├── app/
+│   ├── models/
+│   │   ├── __init__.py
+│   │   ├── user.py
+│   │   └── products.py
+│   │
+│   ├── schemas/
+│   │   ├── __init__.py
+│   │   ├── user.py
+│   │   └── products.py
+│   │
+│   ├── routers/
+│   │   ├── __init__.py
+│   │   ├── users.py
+│   │   └── products.py
+│   │
+│   ├── auth.py
+│   ├── config.py
+│   ├── database.py
+│   ├── utils.py
+│   └── main.py
+│
+├── alembic/
+│   ├── versions/
+│   └── ...
+│
+├── tests/
+│
+├── requirements.txt
+└── README.md
 ```
 
 ---
 
-# ✅ Current Features
+# 🧪 Testing Status
 
-### Authentication
+The implemented functionality has been tested using **FastAPI Swagger UI**.
 
-- [x] User registration
-- [x] Password hashing
-- [x] User login
-- [x] JWT authentication
-- [x] Protected routes
-- [x] Current-user dependency
+### Tested
 
-### User Management
-
-- [x] Get user
-- [x] Update user
-- [x] Delete user
-- [x] Email update
-- [x] Password update
-
-### Authorization
-
-- [x] User roles
-- [x] Admin role
-- [x] Admin dependency
-- [x] Admin-only routes
-- [x] User/admin permissions
-
-### Admin Management
-
-- [x] View all users
-- [x] Update user role
-- [x] Delete normal users
-- [x] Prevent admin self-deletion
-- [x] Prevent admin-to-admin deletion
-
-### Database
-
-- [x] PostgreSQL
-- [x] SQLAlchemy
-- [x] Alembic migrations
-- [x] User table
-- [x] Role column
+- ✅ User registration
+- ✅ User login
+- ✅ JWT authentication
+- ✅ Admin authorization
+- ✅ Normal user restrictions
+- ✅ Product creation
+- ✅ Product listing
+- ✅ Individual product retrieval
+- ✅ Product partial update
+- ✅ Product deletion
+- ✅ Invalid product ID
+- ✅ `403 Forbidden`
+- ✅ `404 Not Found`
+- ✅ `204 No Content`
 
 ---
 
-# 🔜 Next — Day 6
+# ❌ What Is NOT Implemented Yet
 
-## Product Management
+The backend is **not a complete e-commerce application yet**.
 
-The next major feature is the **Product system**, which will move the project from mainly user/authentication functionality into actual e-commerce functionality.
+The following major features are still pending:
 
-### Planned
+## 🛒 Shopping Cart
 
-- [ ] Create Product model
-- [ ] Product database table
-- [ ] Alembic migration
-- [ ] Product schemas
-- [ ] Create product endpoint
-- [ ] Get all products
-- [ ] Get single product
-- [ ] Update product
-- [ ] Delete product
-- [ ] Admin-only product management
-- [ ] Product validation
-- [ ] Product stock management
-- [ ] Product categories
+Not implemented yet:
 
-### Planned API
+- Cart model
+- Cart items
+- Add product to cart
+- Remove product from cart
+- Update quantity
+- View cart
+- Calculate cart total
+
+## 📦 Orders
+
+Not implemented yet:
+
+- Order model
+- Order items
+- Create order
+- Order status
+- Order history
+- Cancel order
+
+## 💳 Payments
+
+Not implemented yet:
+
+- Payment integration
+- Payment verification
+- Payment status
+- Failed payment handling
+
+## 📊 Product Improvements
+
+Not implemented yet:
+
+- Product search
+- Product filtering
+- Product sorting
+- Pagination
+- Product images
+- Product reviews/ratings
+
+## 📦 Inventory
+
+Not implemented yet:
+
+- Automatic stock reduction
+- Stock validation
+- Out-of-stock handling
+- Inventory tracking
+
+---
+
+# 🚧 Current Project Status
 
 ```text
-POST   /products
-GET    /products
-GET    /products/{id}
-PUT    /products/{id}
-DELETE /products/{id}
+Authentication        ██████████ 100%
+Authorization         ██████████ 100%
+User Management       ██████████ 100%
+Product CRUD          ██████████ 100%
+Database Migrations    ██████████ 100%
+Shopping Cart         ░░░░░░░░░░   0%
+Orders                ░░░░░░░░░░   0%
+Payments              ░░░░░░░░░░   0%
+Inventory             ░░░░░░░░░░   0%
+Search & Filtering    ░░░░░░░░░░   0%
+Deployment            ░░░░░░░░░░   0%
 ```
 
-### Planned Permissions
-
-```text
-                    USER        ADMIN
-
-View products        ✅          ✅
-Create product       ❌          ✅
-Update product       ❌          ✅
-Delete product       ❌          ✅
-```
+The project is currently in the **core backend/API development stage**.
 
 ---
 
-# 🛠️ Tech Stack
+# 📚 Day 6 Learning
 
-- **Python**
-- **FastAPI**
-- **PostgreSQL**
-- **SQLAlchemy**
-- **Pydantic**
-- **Alembic**
-- **JWT**
-- **OAuth2**
-- **Passlib / Password Hashing**
-- **Swagger / OpenAPI**
+Day 6 focused on:
+
+- Product CRUD
+- FastAPI routers
+- Separating models and schemas
+- SQLAlchemy queries
+- Alembic migrations
+- JWT authentication
+- Role-based authorization
+- PATCH vs PUT
+- Partial updates
+- `model_dump(exclude_unset=True)`
+- Dynamic updates using `setattr()`
+- HTTP status codes
+- Swagger API testing
 
 ---
 
-# 🎯 Project Goal
+# 🔜 Next Steps
 
-Build a complete e-commerce backend from scratch with:
+The next development stage will continue building the actual e-commerce functionality.
+
+Potential next features:
+
+1. Shopping cart
+2. Cart items
+3. Product quantity management
+4. Order creation
+5. Order history
+6. Inventory management
+7. Payment integration
+8. Product search/filtering
+9. Pagination
+10. Testing with Pytest
+11. Docker
+12. CI/CD
+13. Deployment
+
+---
+
+# 🎯 Current Goal
+
+The immediate goal is to move from a basic **User + Product API** into a complete e-commerce backend by implementing:
 
 ```text
-Authentication
-      ↓
-Authorization
-      ↓
 Users
-      ↓
+  ↓
 Products
-      ↓
+  ↓
 Cart
-      ↓
+  ↓
 Orders
-      ↓
+  ↓
 Payments
-      ↓
-Testing
-      ↓
-Docker
-      ↓
-CI/CD
-      ↓
-Deployment
+  ↓
+Inventory
 ```
 
-The project is being developed incrementally, with each development day introducing and testing a new backend concept.
+The project will continue to be developed incrementally, with each day's work documented in the README.
