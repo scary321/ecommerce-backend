@@ -4,7 +4,7 @@ from sqlalchemy.orm import Session
 from app.auth import get_current_user
 from app.models.cart import CartTable ,CartItemTable
 from app.models.products import ProductTable
-from app.schemas.cart import CartItemCreate,CartItemResponse,CartItemUpdate
+from app.schemas.cart import CartItemCreate,CartItemResponse,CartItemUpdate,CartResponse
 
 
 
@@ -59,3 +59,31 @@ def add_items(cart: CartItemCreate,current_user=Depends(get_current_user),db: Se
     db.refresh(cart_item)
 
     return cart_item
+
+@cart_router.get("/cart",response_model=CartResponse)
+def get_all_cart_item(current_user=Depends(get_current_user),db:Session = Depends(get_db)):
+    
+    get_cart =db.query(CartTable).filter(current_user.id==CartTable.user_id).first()
+    
+    if not get_cart:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="cart is empty")
+    
+    get_cartitem =db.query(CartItemTable).filter(CartItemTable.cart_id==get_cart.id).all()
+    
+    items = []
+    total = 0
+
+    for cart_item in get_cartitem:
+        product = db.query(ProductTable).filter(ProductTable.id == cart_item.product_id).first()
+
+        if not product:
+            continue
+
+        subtotal = product.price * cart_item.quantity
+        total += subtotal
+
+        items.append(
+            CartItemResponse(id=cart_item.id,product_id=cart_item.product_id,quantity=cart_item.quantity)
+        )
+
+    return CartResponse(id=get_cart.id,items=items,total=total)
