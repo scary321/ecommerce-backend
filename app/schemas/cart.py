@@ -13,3 +13,8 @@ class CartItemResponse(BaseModel):
     quantity:int
     
     model_config=ConfigDict(from_attributes=True)
+    
+class CartResponse(BaseModel):
+    id: int
+    items: list[CartItemResponse]
+    total: float
