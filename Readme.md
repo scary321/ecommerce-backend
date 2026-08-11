@@ -1,426 +1,775 @@
-# E-Commerce Backend — Day 6
+# E-Commerce Backend
 
-## 📌 Project Overview
+### Project Overview
 
-This project is a backend API for an e-commerce application built with **FastAPI, PostgreSQL, SQLAlchemy, Alembic, Pydantic, and JWT authentication**.
+This project is a **backend API for an E-Commerce application** built using **FastAPI, SQLAlchemy, PostgreSQL, Pydantic, JWT authentication, and Alembic**.
 
-The project is being developed step-by-step, with each day adding a new part of the backend.
+The goal is to build a complete backend where users can:
 
-By the end of Day 6, the backend has a working **user authentication/authorization system** and a complete **Product CRUD system**.
+- Register and log in
+- Authenticate using JWT tokens
+- Manage their profile
+- Browse products
+- Add products to a shopping cart
+- Update cart quantities
+- Remove products from the cart
+- Place orders
+- Track their orders
+- Eventually complete payments
+
+Admins can:
+
+- Manage users
+- Manage products
+- Manage orders
 
 ---
 
-# ✅ What Has Been Implemented
+# 🗺️ Project Progress
 
-## 👤 User Management
+```text
+FastAPI
+   ↓
+Database / PostgreSQL
+   ↓
+Users
+   ↓
+Authentication
+   ↓
+JWT Authorization
+   ↓
+Admin Authorization
+   ↓
+Products
+   ↓
+🛒 Shopping Cart ← DAY 7
+   ↓
+📦 Orders / Checkout
+   ↓
+💳 Payments
+   ↓
+🧪 Testing
+   ↓
+🚀 Deployment
+```
 
-User functionality has already been implemented.
+---
 
-### User Features
+# ✅ What I Completed Before Day 7
+
+## Users
+
+Implemented user functionality:
 
 - User registration
-- User login
 - Password hashing
-- Password verification
-- JWT access tokens
+- User login
+- JWT access token generation
 - Get current user
-- Get user by ID
 - Update user
-- Delete own account
-- Admin user listing
-- Admin role updates
-- Admin user deletion
+- Delete user
+- Admin user management
+- Admin role management
 - Admin authorization
 
-### User Roles
+---
 
-The application currently supports:
+## Products
 
-- `user`
-- `admin`
+Implemented product functionality:
 
-Admins have additional permissions over users and products.
+- Create product
+- Get all products
+- Get individual product
+- Update product
+- Delete product
+- Admin-only product management
+- Product stock
+- Product category
+- Product price
 
 ---
 
-# 🔐 Authentication & Authorization
+# 🛒 What I Completed on Day 7
 
-JWT authentication is implemented.
+Day 7 focused on building the **Shopping Cart system**.
 
-The authentication flow is:
+## 1. Cart Models
 
-```text
-Login
-  ↓
-Email + Password
-  ↓
-Verify credentials
-  ↓
-Generate JWT
-  ↓
-Client sends Bearer Token
-  ↓
-get_current_user()
-  ↓
-Identify user
-  ↓
-require_admin()
-  ↓
-Check role
-```
+Created:
 
-### Authorization
+- `CartTable`
+- `CartItemTable`
 
-Admin-only operations are protected using:
+The database structure is:
 
 ```text
-Depends(require_admin)
-```
-
-Normal users cannot access admin-only operations.
-
----
-
-# 🛍️ Product Management
-
-Day 6 introduced the Product Management system.
-
-## Product Model
-
-The `products` database table contains:
-
-- `id`
-- `name`
-- `description`
-- `price`
-- `stock`
-- `category`
-- `created_at`
-
-The Product model is separated from the User model.
-
----
-
-# 📦 Product CRUD
-
-The Product API currently supports complete CRUD operations.
-
-| Method | Endpoint         | Purpose          | Access        |
-| ------ | ---------------- | ---------------- | ------------- |
-| POST   | `/products`      | Create product   | Admin         |
-| GET    | `/products`      | Get all products | Authenticated |
-| GET    | `/products/{id}` | Get one product  | Authenticated |
-| PATCH  | `/products/{id}` | Update product   | Admin         |
-| DELETE | `/products/{id}` | Delete product   | Admin         |
-
----
-
-## ✅ Create Product
-
-```text
-POST /products
-```
-
-Admins can create products.
-
-Status:
-
-```text
-201 Created
+User
+ ↓
+Cart
+ ↓
+CartItem
+ ↓
+Product
 ```
 
 ---
 
-## ✅ Get All Products
+## 2. Cart Database Migration
+
+Created an Alembic migration for:
 
 ```text
-GET /products
+carts
+cart_items
 ```
 
-Authenticated users can retrieve all products.
+The migration was successfully applied to the database.
 
 ---
 
-## ✅ Get Product
+## 3. Cart Schemas
+
+Created schemas for:
+
+### CartItemCreate
+
+Used when adding a product:
 
 ```text
-GET /products/{id}
+product_id
+quantity
 ```
 
-Returns a specific product.
+### CartItemUpdate
 
-If the product doesn't exist:
+Used when updating quantity:
 
 ```text
-404 Product not found
+quantity
 ```
 
----
+### CartItemResponse
 
-## ✅ Update Product
+Used to return cart item information.
+
+### CartResponse
+
+Used to return:
 
 ```text
-PATCH /products/{id}
-```
-
-Admins can partially update products.
-
-For example, only changing:
-
-```json
-{
-  "price": 1499
-}
-```
-
-will leave the other product fields unchanged.
-
-Partial updates use:
-
-```text
-model_dump(exclude_unset=True)
-```
-
----
-
-## ✅ Delete Product
-
-```text
-DELETE /products/{id}
-```
-
-Admins can delete products.
-
-Successful deletion returns:
-
-```text
-204 No Content
+cart id
+items
+total
 ```
 
 ---
 
-# 🗄️ Database
+# 4. Add Product to Cart
 
-PostgreSQL is being used as the main database.
+Implemented:
 
-SQLAlchemy is used as the ORM.
+```text
+POST /cart/items
+```
 
-Alembic is used for database migrations.
+The endpoint:
 
-The Product table was successfully created using:
+1. Finds the product.
+2. Checks whether the product exists.
+3. Validates quantity.
+4. Checks product stock.
+5. Finds the user's cart.
+6. Creates a cart if the user doesn't have one.
+7. Checks if the product already exists in the cart.
+8. Increases quantity if it already exists.
+9. Creates a new cart item otherwise.
+10. Saves the changes.
 
-```bash
-alembic revision --autogenerate -m "add products table"
+---
+
+# 5. Stock Validation
+
+Implemented stock checking.
+
+Example:
+
+```text
+Product stock = 10
+Requested quantity = 5
+
+5 <= 10
+✓ Allowed
+```
+
+But:
+
+```text
+Product stock = 10
+Requested quantity = 15
+
+15 > 10
+✗ Rejected
+```
+
+Also handled the case where an existing cart quantity plus the requested quantity would exceed stock.
+
+---
+
+# 6. Prevent Duplicate Cart Items
+
+If the user already has:
+
+```text
+iPhone × 2
+```
+
+and adds:
+
+```text
+iPhone × 3
+```
+
+the system changes it to:
+
+```text
+iPhone × 5
+```
+
+instead of creating two separate cart items.
+
+---
+
+# 7. View Cart
+
+Implemented:
+
+```text
+GET /cart
+```
+
+The endpoint:
+
+- Finds the logged-in user's cart
+- Gets all cart items
+- Finds the corresponding products
+- Calculates item subtotals
+- Calculates the total cart value
+
+Example:
+
+```text
+Product A
+₹500 × 2 = ₹1,000
+
+Product B
+₹200 × 3 = ₹600
+
+Total = ₹1,600
+```
+
+---
+
+# 8. Update Cart Item
+
+Implemented:
+
+```text
+PATCH /cart/items/{product_id}
+```
+
+Allows users to change the quantity of an item.
+
+Example:
+
+```text
+Before:
+Mouse × 2
+
+Update:
+quantity = 5
+
+After:
+Mouse × 5
+```
+
+The new quantity is checked against available stock.
+
+---
+
+# 9. Remove Cart Item
+
+Implemented:
+
+```text
+DELETE /cart/items/{product_id}
+```
+
+This removes the product from the user's cart.
+
+It does **not** delete the actual product.
+
+```text
+CartItem → deleted
+Product  → remains
+```
+
+---
+
+# 10. Clear Cart
+
+Implemented:
+
+```text
+DELETE /cart
+```
+
+This removes all cart items belonging to the current user's cart.
+
+The cart itself remains in the database.
+
+---
+
+# 🔐 Authorization in Cart
+
+Cart operations use:
+
+```text
+get_current_user
+```
+
+This ensures users can only modify **their own cart**.
+
+Admin authorization is not required because users are allowed to manage their own shopping cart.
+
+---
+
+# 🧠 Day 7 Theory
+
+## 1. What Is a Shopping Cart?
+
+A shopping cart is temporary user-specific data that stores products a user intends to purchase.
+
+Example:
+
+```text
+User #10
+   ↓
+Cart #5
+   ↓
+Cart Items
+├── Product #2 × 3
+├── Product #7 × 1
+└── Product #10 × 2
+```
+
+---
+
+# 2. Why Do We Need CartItem?
+
+We don't directly connect:
+
+```text
+Cart → Product
+```
+
+because we need additional information such as:
+
+```text
+quantity
+```
+
+Therefore:
+
+```text
+Cart
+ ↓
+CartItem
+ ↓
+Product
+```
+
+For example:
+
+```text
+CartItem
+product_id = 5
+quantity = 3
+```
+
+means:
+
+> The user has 3 units of product #5 in their cart.
+
+---
+
+# 3. Foreign Keys
+
+Foreign keys connect tables.
+
+Example:
+
+```text
+cart_items.cart_id
+        ↓
+carts.id
 ```
 
 and:
 
-```bash
-alembic upgrade head
+```text
+cart_items.product_id
+        ↓
+products.id
 ```
+
+This creates relationships between database tables.
 
 ---
 
-# 📁 Current Project Structure
+# 4. One-to-Many Relationship
+
+One cart can contain many cart items.
 
 ```text
-E-commerce backend/
-│
-├── app/
-│   ├── models/
-│   │   ├── __init__.py
-│   │   ├── user.py
-│   │   └── products.py
-│   │
-│   ├── schemas/
-│   │   ├── __init__.py
-│   │   ├── user.py
-│   │   └── products.py
-│   │
-│   ├── routers/
-│   │   ├── __init__.py
-│   │   ├── users.py
-│   │   └── products.py
-│   │
-│   ├── auth.py
-│   ├── config.py
-│   ├── database.py
-│   ├── utils.py
-│   └── main.py
-│
-├── alembic/
-│   ├── versions/
-│   └── ...
-│
-├── tests/
-│
-├── requirements.txt
-└── README.md
+Cart
+ ├── CartItem
+ ├── CartItem
+ └── CartItem
+```
+
+Similarly, a product can appear in many different users' carts.
+
+This is why relational database design is important in an e-commerce application.
+
+---
+
+# 5. Authentication vs Authorization
+
+### Authentication
+
+Answers:
+
+> Who is the user?
+
+JWT authentication identifies the logged-in user.
+
+### Authorization
+
+Answers:
+
+> What is this user allowed to do?
+
+For the cart:
+
+```text
+JWT
+ ↓
+get_current_user
+ ↓
+current_user.id
+ ↓
+Find user's cart
+```
+
+This prevents one user from accessing another user's cart.
+
+---
+
+# 6. Business Logic
+
+Business logic represents the rules of the application.
+
+Examples from Day 7:
+
+### Stock rule
+
+```text
+requested quantity <= available stock
+```
+
+### Duplicate product rule
+
+```text
+Product already in cart
+        ↓
+Increase quantity
+```
+
+Otherwise:
+
+```text
+Create new CartItem
+```
+
+### Ownership rule
+
+```text
+Cart.user_id == current_user.id
+```
+
+These rules make the API behave like a real e-commerce application.
+
+---
+
+# 7. Database Transactions
+
+Important SQLAlchemy operations:
+
+### `db.add()`
+
+Adds a new database object.
+
+### `db.delete()`
+
+Marks an object for deletion.
+
+### `db.commit()`
+
+Saves the transaction to the database.
+
+### `db.refresh()`
+
+Refreshes the object with the latest database state.
+
+---
+
+# 8. `.first()` vs `.all()`
+
+### `.first()`
+
+Use when you expect one result.
+
+Example:
+
+```text
+Find user's cart
+```
+
+Returns:
+
+```text
+Cart object
+```
+
+or:
+
+```text
+None
+```
+
+### `.all()`
+
+Use when multiple records are expected.
+
+Example:
+
+```text
+Get all items in a cart
+```
+
+Returns:
+
+```text
+[CartItem, CartItem, CartItem]
 ```
 
 ---
 
-# 🧪 Testing Status
+# 9. Cart Total Calculation
 
-The implemented functionality has been tested using **FastAPI Swagger UI**.
+The cart total is calculated from the products.
 
-### Tested
+Formula:
 
-- ✅ User registration
-- ✅ User login
-- ✅ JWT authentication
-- ✅ Admin authorization
-- ✅ Normal user restrictions
-- ✅ Product creation
-- ✅ Product listing
-- ✅ Individual product retrieval
-- ✅ Product partial update
-- ✅ Product deletion
-- ✅ Invalid product ID
-- ✅ `403 Forbidden`
-- ✅ `404 Not Found`
-- ✅ `204 No Content`
+```text
+subtotal = product price × quantity
+```
+
+Then:
+
+```text
+total = subtotal₁ + subtotal₂ + subtotal₃ + ...
+```
+
+Example:
+
+```text
+₹1,000
++ ₹500
++ ₹2,000
+= ₹3,500
+```
 
 ---
 
-# ❌ What Is NOT Implemented Yet
+# 10. Why Product and Cart Are Separate
 
-The backend is **not a complete e-commerce application yet**.
+A product belongs to the store's inventory.
 
-The following major features are still pending:
+A cart belongs to a particular user.
 
-## 🛒 Shopping Cart
+Therefore:
 
-Not implemented yet:
+```text
+Product
+ ↓
+Store inventory
 
-- Cart model
-- Cart items
-- Add product to cart
-- Remove product from cart
-- Update quantity
-- View cart
-- Calculate cart total
+Cart
+ ↓
+User's temporary selection
+```
 
-## 📦 Orders
+Deleting a cart item must not delete the actual product.
 
-Not implemented yet:
+---
 
-- Order model
-- Order items
-- Create order
-- Order status
-- Order history
+# 11. Why `CartItem` Is Important in E-Commerce
+
+The `CartItem` acts as the connection between:
+
+```text
+User's Cart
+      ↓
+Selected Product
+      ↓
+Quantity
+```
+
+Later, the same concept will be used when creating:
+
+```text
+Order
+ ↓
+OrderItem
+ ↓
+Product
+```
+
+So understanding `CartItem` is important before starting the order system.
+
+---
+
+# 📚 What I Should Understand After Day 7
+
+- [ ] Foreign keys
+- [ ] One-to-many relationships
+- [ ] Cart and CartItem design
+- [ ] Authentication
+- [ ] Authorization
+- [ ] User ownership
+- [ ] SQLAlchemy queries
+- [ ] `.first()`
+- [ ] `.all()`
+- [ ] Database transactions
+- [ ] Stock validation
+- [ ] Business logic
+- [ ] Pydantic schemas
+- [ ] Cart total calculation
+- [ ] CRUD operations
+- [ ] `ON DELETE CASCADE`
+
+---
+
+# 🚧 What Is Still Left in the Project
+
+## Day 8 — Orders & Checkout
+
+Next major functionality:
+
+- Create Order model
+- Create OrderItem model
+- Convert cart into order
+- Calculate order total
+- Store order status
+- Store order date
+- Connect order with user
+- Connect order items with products
+- Clear cart after successful order
+- Reduce product stock
+
+---
+
+## After Orders
+
+Still remaining:
+
+### 📦 Order Management
+
+- View user's orders
+- View individual order
 - Cancel order
+- Admin order management
+- Update order status
 
-## 💳 Payments
-
-Not implemented yet:
+### 💳 Payments
 
 - Payment integration
 - Payment verification
 - Payment status
-- Failed payment handling
+- Failed payments
+- Successful payments
 
-## 📊 Product Improvements
+### 🧪 Testing
 
-Not implemented yet:
+- User tests
+- Authentication tests
+- Product tests
+- Cart tests
+- Order tests
+- Payment tests
 
-- Product search
-- Product filtering
-- Product sorting
-- Pagination
-- Product images
-- Product reviews/ratings
+### 🚀 Production
 
-## 📦 Inventory
-
-Not implemented yet:
-
-- Automatic stock reduction
-- Stock validation
-- Out-of-stock handling
-- Inventory tracking
+- Environment variables
+- Docker
+- PostgreSQL production setup
+- CI/CD
+- Deployment
+- API documentation
+- Security improvements
 
 ---
 
-# 🚧 Current Project Status
+# 🎯 Day 7 Summary
+
+Today I built the **Shopping Cart system**.
+
+The important architecture learned today was:
 
 ```text
-Authentication        ██████████ 100%
-Authorization         ██████████ 100%
-User Management       ██████████ 100%
-Product CRUD          ██████████ 100%
-Database Migrations    ██████████ 100%
-Shopping Cart         ░░░░░░░░░░   0%
-Orders                ░░░░░░░░░░   0%
-Payments              ░░░░░░░░░░   0%
-Inventory             ░░░░░░░░░░   0%
-Search & Filtering    ░░░░░░░░░░   0%
-Deployment            ░░░░░░░░░░   0%
+Authenticated User
+       ↓
+      Cart
+       ↓
+   Cart Items
+       ↓
+    Products
+       ↓
+Price + Quantity + Stock
+       ↓
+ Business Logic
+       ↓
+    API Response
 ```
 
-The project is currently in the **core backend/API development stage**.
-
----
-
-# 📚 Day 6 Learning
-
-Day 6 focused on:
-
-- Product CRUD
-- FastAPI routers
-- Separating models and schemas
-- SQLAlchemy queries
-- Alembic migrations
-- JWT authentication
-- Role-based authorization
-- PATCH vs PUT
-- Partial updates
-- `model_dump(exclude_unset=True)`
-- Dynamic updates using `setattr()`
-- HTTP status codes
-- Swagger API testing
-
----
-
-# 🔜 Next Steps
-
-The next development stage will continue building the actual e-commerce functionality.
-
-Potential next features:
-
-1. Shopping cart
-2. Cart items
-3. Product quantity management
-4. Order creation
-5. Order history
-6. Inventory management
-7. Payment integration
-8. Product search/filtering
-9. Pagination
-10. Testing with Pytest
-11. Docker
-12. CI/CD
-13. Deployment
-
----
-
-# 🎯 Current Goal
-
-The immediate goal is to move from a basic **User + Product API** into a complete e-commerce backend by implementing:
+The cart system is now ready to become the foundation for the next major part of the project:
 
 ```text
-Users
+🛒 Cart
   ↓
-Products
+📦 Order
   ↓
-Cart
+💳 Payment
   ↓
-Orders
-  ↓
-Payments
-  ↓
-Inventory
+✅ Purchase
 ```
 
-The project will continue to be developed incrementally, with each day's work documented in the README.
+## Day 7 Status
+
+**🟢 COMPLETE**
+
+## Next Goal
+
+**Day 8 — Orders & Checkout**

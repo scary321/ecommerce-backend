@@ -220,3 +220,41 @@ def remove_cart_item(
         db.commit()
 
         return
+
+@cart_router.delete(
+    "/cart",
+    status_code=status.HTTP_204_NO_CONTENT
+)
+def clear_cart(
+    current_user=Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Find user's cart
+    current_cart = db.query(CartTable).filter(
+        CartTable.user_id == current_user.id
+    ).first()
+
+    if not current_cart:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Cart not found"
+        )
+
+    # Find all items in the cart
+    cart_items = db.query(CartItemTable).filter(
+        CartItemTable.cart_id == current_cart.id
+    ).all()
+
+    if not cart_items:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Cart is already empty"
+        )
+
+    # Delete all cart items
+    for item in cart_items:
+        db.delete(item)
+
+    db.commit()
+
+    return
