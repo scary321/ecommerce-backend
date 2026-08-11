@@ -1,10 +1,11 @@
 from app.database import get_db
 from fastapi import APIRouter , Depends, status ,HTTPException
 from sqlalchemy.orm import Session 
-from app.auth import get_current_user
+from app.auth import get_current_user, require_admin
 from app.models.cart import CartTable ,CartItemTable
-from app.models.products import ProductTable
+from app.models.products import ProductTable 
 from app.schemas.cart import CartItemCreate,CartItemResponse,CartItemUpdate,CartResponse
+from app.schemas.product import ProductCreate,ProductResponse,ProductUpdate
 
 
 
@@ -87,3 +88,6 @@ def get_all_cart_item(current_user=Depends(get_current_user),db:Session = Depend
         )
 
     return CartResponse(id=get_cart.id,items=items,total=total)
+
+@cart_router.patch("/cart/items/{product_id}",response_model=CartResponse)
+def update_product(id:int,product_update: ProductUpdate, current_user=Depends(require_admin),db:Session = Depends(get_db)):
