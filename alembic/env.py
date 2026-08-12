@@ -6,6 +6,7 @@ from sqlalchemy import pool
 from app.models.user import UsersTable
 from app.models.products import ProductTable
 from app.models.cart import CartTable, CartItemTable
+from app.models.orders import OrderItemTable,OrderTable
 
 from alembic import context
 
