@@ -14,3 +14,5 @@ class UsersTable(Base):
     role = Column(String(15), default="user")
 
     cart = relationship("CartTable",back_populates="user",uselist=False,cascade="all, delete-orphan")
+    
+    orders = relationship("OrderTable",back_populates="user",uselist=True,cascade="all, delete-orphan")

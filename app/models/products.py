@@ -15,3 +15,5 @@ class ProductTable(Base):
     created_at = Column(DateTime, default=func.now(), nullable=False)
 
     cart_items = relationship("CartItemTable",back_populates="product")
+    
+    orderitem= relationship("OrderItemTable",back_populates="product")
