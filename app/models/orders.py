@@ -13,7 +13,7 @@ class OrderTable(Base):
     
     user = relationship("UsersTable",back_populates="orders")
     
-    orderitems = relationship("OrderItemTable",back_populates="orders",cascade="all, delete-orphan")
+    items = relationship("OrderItemTable",back_populates="order",cascade="all, delete-orphan")
     
 class OrderItemTable(Base):
     __tablename__ = "order_items"
@@ -24,6 +24,6 @@ class OrderItemTable(Base):
     quantity=Column(Integer,nullable=False)
     price=Column(Float,nullable=False)
     
-    orders = relationship("OrderTable",back_populates="orderitems")
+    order = relationship("OrderTable",back_populates="items")
     
-    product = relationship("ProductTable",back_populates="orderitem")
+    product = relationship("ProductTable",back_populates="order_item")

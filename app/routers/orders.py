@@ -70,7 +70,7 @@ def add_cart(current_user=Depends(get_current_user),db: Session = Depends(get_db
 
     return order
 
-@orders_router.get("/orders",response_model=list[OrderItemResponse])
+@orders_router.get("/orders",response_model=list[OrderResponse])
 def get_all_orders(current_user=Depends(get_current_user),db:Session = Depends(get_db)):
     
     get_order=db.query(OrderTable).filter(OrderTable.user_id==current_user.id).all()

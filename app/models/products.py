@@ -16,4 +16,4 @@ class ProductTable(Base):
 
     cart_items = relationship("CartItemTable",back_populates="product")
     
-    orderitem= relationship("OrderItemTable",back_populates="product")
+    order_item= relationship("OrderItemTable",back_populates="product")
