@@ -17,3 +17,8 @@ class OrderResponse(BaseModel):
     items:list[OrderItemResponse]
     
     model_config = ConfigDict(from_attributes=True)
+    
+class StatusUpdate(BaseModel):
+    status:str
+    
+    model_config = ConfigDict(from_attributes=True)

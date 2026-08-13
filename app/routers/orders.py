@@ -5,7 +5,7 @@ from app.auth import get_current_user
 from app.models.cart import CartTable ,CartItemTable
 from app.models.products import ProductTable 
 from app.schemas.cart import CartItemCreate,CartItemResponse,CartItemUpdate,CartResponse
-from app.schemas.orders import OrderItemResponse,OrderResponse
+from app.schemas.orders import OrderItemResponse,OrderResponse,StatusUpdate
 from app.models.orders import OrderTable,OrderItemTable
 
 orders_router=APIRouter()
@@ -88,4 +88,41 @@ def get_order(id:int,current_user=Depends(get_current_user),db:Session = Depends
     if not order:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="order not found")
             
+    return order
+
+@orders_router.patch("/orders/{id}/status",response_model=OrderResponse)
+def update_status(id:int,status_update: StatusUpdate,current_user=Depends(get_current_user),db:Session = Depends(get_db)):
+    
+    order=db.query(OrderTable).filter(OrderTable.user_id==current_user.id,OrderTable.id == id).first()
+    
+    if not order:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="order not found")
+    
+    status_order=["pending","processing","shipped","delivered","cancelled"]
+    
+    if status_update.status not in status_order:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid status")
+    
+    if order.status == "pending":
+        allowed_update = ["processing","cancelled"]
+        
+    if order.status == "processing":
+        allowed_update = ["shipped","cancelled"]
+    
+    if order.status == "shipped":
+            allowed_update = ["delivered"]
+                    
+    if order.status == "delivered":
+        allowed_update = []
+        
+    if order.status == "cancelled":
+            allowed_update = []
+            
+    if status_update.status not in allowed_update:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid status transition")
+    
+    order.status = status_update.status
+    
+    db.commit()
+    db.refresh(order)
     return order
