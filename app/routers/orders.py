@@ -70,3 +70,23 @@ def add_cart(current_user=Depends(get_current_user),db: Session = Depends(get_db
     db.commit()
 
     return order
+
+@orders_router.get("/orders",response_model=list[OrderItemResponse])
+def get_all_orders(current_user=Depends(get_current_user),db:Session = Depends(get_db)):
+    
+    get_order=db.query(OrderTable).filter(OrderTable.user_id==current_user.id).all()
+    
+    if not get_order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="orders not found")
+    
+    return get_order
+
+@orders_router.get("/orders/{id}",response_model=OrderResponse)
+def get_order(id:int,current_user=Depends(get_current_user),db:Session = Depends(get_db)):
+    
+    order=db.query(OrderTable).filter(OrderTable.user_id==current_user.id,OrderTable.id == id).first()
+    
+    if not order:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="order not found")
+            
+    return order
