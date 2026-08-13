@@ -10,7 +10,7 @@ from app.models.orders import OrderTable,OrderItemTable
 
 orders_router=APIRouter()
 
-@orders_router.post("/orders",response_model=OrderItemResponse)
+@orders_router.post("/orders",response_model=OrderResponse)
 def add_cart(current_user=Depends(get_current_user),db: Session = Depends(get_db)):
     
     cart = db.query(CartTable).filter(CartTable.user_id == current_user.id).first()
@@ -23,7 +23,6 @@ def add_cart(current_user=Depends(get_current_user),db: Session = Depends(get_db
     if not cart_item:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="item not exist")
     
-    items = []
     total = 0
     
     for item in cart_item:
