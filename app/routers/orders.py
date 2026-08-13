@@ -96,7 +96,7 @@ def update_status(id:int,status_update: StatusUpdate,current_user=Depends(get_cu
     order=db.query(OrderTable).filter(OrderTable.user_id==current_user.id,OrderTable.id == id).first()
     
     if not order:
-                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="order not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="order not found")
     
     status_order=["pending","processing","shipped","delivered","cancelled"]
     
@@ -126,3 +126,30 @@ def update_status(id:int,status_update: StatusUpdate,current_user=Depends(get_cu
     db.commit()
     db.refresh(order)
     return order
+
+@orders_router.patch("/orders/{id}/cancel",response_model=OrderResponse)
+def update_status(id:int,current_user=Depends(get_current_user),db:Session = Depends(get_db)):
+    
+    order=db.query(OrderTable).filter(OrderTable.user_id==current_user.id,OrderTable.id == id).first()
+    
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="order not found")
+    
+    if order.status not in ["processing","pending"] :
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail ="reject cancellation")
+     
+    order_item = db.query(OrderItemTable).filter(OrderItemTable.order_id==order.id).all()
+
+    for item in order_item:
+        product =db.query(ProductTable).filter(ProductTable.id == item.product_id).first()
+        product.stock += item.quantity
+    order.status = "cancelled"
+        
+    db.commit()
+    db.refresh(order)
+    return order
+                
+    
+    
+
+        
