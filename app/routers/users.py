@@ -80,7 +80,7 @@ def update_user(id:int,user_update: UserUpdate, current_user=Depends(get_current
     return user
 
 @user_router.delete("/users/me/{id}",status_code=status.HTTP_204_NO_CONTENT)
-def delete_user(id:int, current_user=Depends(get_current_user),db:Session = Depends(get_db)):
+def delete_me(id:int, current_user=Depends(get_current_user),db:Session = Depends(get_db)):
     if (current_user.id != id):
                 raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="Access denied")
     

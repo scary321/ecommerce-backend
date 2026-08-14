@@ -4,7 +4,8 @@ from app.database import get_db
 from app.schemas.user import UserResponse ,AdminRoleUpdate
 from app.auth import require_admin
 from app.models.user import UsersTable
-
+from app.schemas.orders import OrderResponse
+from app.models.orders import OrderTable
 
 
 
@@ -56,3 +57,13 @@ def admin_delete_user(id: int, current_user=Depends(require_admin),db:Session = 
     db.commit()
 
     return
+
+@admin_router.get("/admin/orders",response_model=list[OrderResponse])
+def get_all_orders(current_user=Depends(require_admin),db:Session = Depends(get_db)):
+    
+    orders = db.query(OrderTable).all()
+    
+    if not orders:
+            return []
+    
+    return orders
