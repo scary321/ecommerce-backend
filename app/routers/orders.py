@@ -4,8 +4,7 @@ from sqlalchemy.orm import Session
 from app.auth import get_current_user
 from app.models.cart import CartTable ,CartItemTable
 from app.models.products import ProductTable 
-from app.schemas.cart import CartItemCreate,CartItemResponse,CartItemUpdate,CartResponse
-from app.schemas.orders import OrderItemResponse,OrderResponse,StatusUpdate
+from app.schemas.orders import OrderResponse,StatusUpdate
 from app.models.orders import OrderTable,OrderItemTable
 
 orders_router=APIRouter()

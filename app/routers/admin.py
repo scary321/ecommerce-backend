@@ -7,7 +7,8 @@ from app.models.user import UsersTable
 from app.schemas.orders import OrderResponse
 from app.models.orders import OrderTable
 from app.schemas.orders import StatusUpdate
-
+from app.models.orders import OrderTable,OrderItemTable
+from app.models.products import ProductTable
 
 
 
@@ -91,6 +92,31 @@ def admin_update_status(id:int,status_update: StatusUpdate,current_user=Depends(
             raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid status")
                 
     order.status = status_update.status    
+        
+    db.commit()
+    db.refresh(order)
+    return order
+
+@admin_router.patch("/orders/{id}/cancel",response_model=OrderResponse)
+def update_status(id:int,current_user=Depends(require_admin),db:Session = Depends(get_db)):
+    
+    order=db.query(OrderTable).filter(OrderTable.id == id).first()
+    
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="order not found")
+    
+    if order.status in ["cancelled"] :
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail ="reject cancellation")
+    
+    if order.status in ["delivered"]:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail ="reject cancellation beacause order already deliverd")
+     
+    order_item = db.query(OrderItemTable).filter(OrderItemTable.order_id==order.id).all()
+
+    for item in order_item:
+        product =db.query(ProductTable).filter(ProductTable.id == item.product_id).first()
+        product.stock += item.quantity
+    order.status = "cancelled"
         
     db.commit()
     db.refresh(order)
