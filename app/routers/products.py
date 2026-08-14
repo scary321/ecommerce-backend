@@ -9,6 +9,8 @@ from app.models.products import ProductTable
 
 product_router = APIRouter()
 
+# for user and admin router product endpoint
+
 @product_router.post("/products",status_code=status.HTTP_201_CREATED,response_model=ProductResponse)
 def create_product(product: ProductCreate,current_user=Depends(require_admin),db: Session = Depends(get_db)):
 
