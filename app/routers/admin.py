@@ -59,11 +59,19 @@ def admin_delete_user(id: int, current_user=Depends(require_admin),db:Session = 
     return
 
 @admin_router.get("/admin/orders",response_model=list[OrderResponse])
-def get_all_orders(current_user=Depends(require_admin),db:Session = Depends(get_db)):
+def get_all_orders(status: str | None = None,current_user=Depends(require_admin),db:Session = Depends(get_db)):
     
-    orders = db.query(OrderTable).all()
+    orders = db.query(OrderTable)
     
-    if not orders:
-            return []
+    status_order = ["pending", "processing", "shipped", "delivered", "cancelled"]
     
-    return orders
+    if status:
+        if status not in status_order:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid status"
+            )
+
+        orders = orders.filter(OrderTable.status == status)
+
+    return orders.all()
