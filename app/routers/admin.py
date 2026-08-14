@@ -6,6 +6,7 @@ from app.auth import require_admin
 from app.models.user import UsersTable
 from app.schemas.orders import OrderResponse
 from app.models.orders import OrderTable
+from app.schemas.orders import StatusUpdate
 
 
 
@@ -75,3 +76,22 @@ def get_all_orders(status: str | None = None,current_user=Depends(require_admin)
         orders = orders.filter(OrderTable.status == status)
 
     return orders.all()
+
+@admin_router.patch("/orders/{id}/status",response_model=OrderResponse)
+def admin_update_status(id:int,status_update: StatusUpdate,current_user=Depends(require_admin),db:Session = Depends(get_db)):
+    
+    order=db.query(OrderTable).filter(OrderTable.id == id).first()
+        
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="order not found")
+        
+    status_order=["pending","processing","shipped","delivered","cancelled"]
+    
+    if status_update.status not in status_order:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST,detail="Invalid status")
+                
+    order.status = status_update.status    
+        
+    db.commit()
+    db.refresh(order)
+    return order
