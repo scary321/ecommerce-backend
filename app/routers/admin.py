@@ -125,7 +125,7 @@ def update_status(id:int,current_user=Depends(require_admin),db:Session = Depend
     return order
 
 @admin_router.get("/admin/dashboard",response_model=DashboardResponse)
-def admin_dasgboard(current_user=Depends(require_admin),db:Session = Depends(get_db)):
+def admin_dashboard(current_user=Depends(require_admin),db:Session = Depends(get_db)):
     
     total_user=db.query(UsersTable).count()
     total_product=db.query(ProductTable).count()
@@ -137,4 +137,14 @@ def admin_dasgboard(current_user=Depends(require_admin),db:Session = Depends(get
     total_cancelled_orders= db.query(OrderTable).filter(OrderTable.status=="cancelled").count()
     total_sales = db.query(func.sum(OrderTable.total)).filter(OrderTable.status != "cancelled").scalar() or 0
     
-    return DashboardResponse
+    return DashboardResponse(
+    users=total_user,
+    products=total_product,
+    orders=total_orders,
+    pending_orders=total_pending_orders,
+    processing_orders=total_processing_orders,
+    shipped_orders=total_shipped_orders,
+    delivered_orders=total_delivered_orders,
+    cancelled_orders=total_cancelled_orders,
+    sales=total_sales
+)
