@@ -9,6 +9,8 @@ from app.models.orders import OrderTable
 from app.schemas.orders import StatusUpdate
 from app.models.orders import OrderTable,OrderItemTable
 from app.models.products import ProductTable
+from app.schemas.dashboard import DashboardResponse
+from sqlalchemy import func
 
 
 
@@ -121,3 +123,18 @@ def update_status(id:int,current_user=Depends(require_admin),db:Session = Depend
     db.commit()
     db.refresh(order)
     return order
+
+@admin_router.get("/admin/dashboard",response_model=DashboardResponse)
+def admin_dasgboard(current_user=Depends(require_admin),db:Session = Depends(get_db)):
+    
+    total_user=db.query(UsersTable).count()
+    total_product=db.query(ProductTable).count()
+    total_orders=db.query(OrderTable).count()
+    total_pending_orders=db.query(OrderTable).filter(OrderTable.status=="pending").count()
+    total_processing_orders=db.query(OrderTable).filter(OrderTable.status=="processing").count()
+    total_shipped_orders=db.query(OrderTable).filter(OrderTable.status=="shipped").count()
+    total_delivered_orders=db.query(OrderTable).filter(OrderTable.status=="delivered").count()
+    total_cancelled_orders= db.query(OrderTable).filter(OrderTable.status=="cancelled").count()
+    total_sales = db.query(func.sum(OrderTable.total)).filter(OrderTable.status != "cancelled").scalar() or 0
+    
+    return DashboardResponse
