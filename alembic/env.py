@@ -7,7 +7,7 @@ from app.models.user import UsersTable
 from app.models.products import ProductTable
 from app.models.cart import CartTable, CartItemTable
 from app.models.orders import OrderItemTable,OrderTable
-
+from app.models.payment import PaymentTable
 from alembic import context
 
 # this is the Alembic Config object, which provides
