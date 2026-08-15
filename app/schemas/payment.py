@@ -14,3 +14,6 @@ class PaymentResponse(BaseModel):
     transaction_id:str|None=None
     
     model_config=ConfigDict(from_attributes=True)
+    
+class PaymentStatusUpdate(BaseModel):
+    status:str
