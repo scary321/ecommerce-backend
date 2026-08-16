@@ -11,5 +11,6 @@ class PaymentTable(Base):
     payment_method = Column(String,nullable=False)
     status=Column(String,nullable=False,default="pending")
     transaction_id = Column(String,unique=True,nullable=True)
+    razorpay_order_id = Column(String,unique=True,nullable=True)
     
     order = relationship("OrderTable",back_populates="payment")
