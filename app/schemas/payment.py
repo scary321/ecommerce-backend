@@ -17,3 +17,11 @@ class PaymentResponse(BaseModel):
     
 class PaymentStatusUpdate(BaseModel):
     status:str
+    
+class RazorpayOrderResponse(BaseModel):
+    Razorpay_order_id:str
+    amount:int
+    currency:str
+    Razorpay_key_ID:str
+    
+    model_config=ConfigDict(from_attributes=True)
