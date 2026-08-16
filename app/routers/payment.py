@@ -1,5 +1,5 @@
 from app.database import get_db
-from fastapi import APIRouter , Depends, status ,HTTPException
+from fastapi import APIRouter , Depends, status ,HTTPException,Request
 from sqlalchemy.orm import Session 
 from app.auth import get_current_user,require_admin
 from app.models.payment import PaymentTable
@@ -8,6 +8,8 @@ from app.models.orders import OrderTable
 from app.utils.razorpay import razorpay_client
 from app.config import settings
 import razorpay
+import json
+
 
 payment_router = APIRouter()
 
@@ -174,3 +176,60 @@ def razor_pay_verification(verify:RazorpayPaymentVerification,current_user=Depen
     db.refresh(payment)
 
     return payment    
+
+
+@payment_router.post("/payments/webhook",status_code=status.HTTP_200_OK)
+async def razor_pay_verification_webhook(request: Request,db: Session = Depends(get_db)
+):
+    body = await request.body()
+
+    signature = request.headers.get("X-Razorpay-Signature")
+
+    if not signature:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Razorpay signature missing"
+        )
+
+    try:
+        razorpay_client.utility.verify_webhook_signature(
+            body.decode("utf-8"),
+            signature,
+            settings.RAZORPAY_WEBHOOK_SECRET
+        )
+
+    except Exception:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid webhook signature"
+        )
+
+    payload = json.loads(body)
+
+    event = payload.get("event")
+
+    if event == "payment.captured":
+        payment_entity = payload["payload"]["payment"]["entity"]
+
+        razorpay_order_id = payment_entity["order_id"]
+        razorpay_payment_id = payment_entity["id"]
+
+        payment = db.query(PaymentTable).filter(
+            PaymentTable.razorpay_order_id == razorpay_order_id
+        ).first()
+
+        if not payment:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Payment not found"
+            )
+
+        if payment.status == "successful":
+            return {"message": "Successful payment cannot be marked as failed"}
+
+        payment.status = "failed"
+        payment.transaction_id = razorpay_payment_id
+
+        db.commit()
+
+    return {"message": "Webhook processed"}

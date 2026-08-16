@@ -1,0 +1,54 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Razorpay Test</title>
+  </head>
+
+  <body>
+    <h2>Razorpay Test Payment</h2>
+
+    <button id="payButton">Pay with Razorpay</button>
+
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+    <script>
+      const options = {
+        key: "rzp_test_TQO6nJnEaOCrad",
+
+        amount: 37500,
+
+        currency: "INR",
+
+        name: "E-Commerce Test",
+
+        description: "Test Payment",
+
+        order_id: "order_TQR38aw4HAzEXb",
+
+        handler: function (response) {
+          console.log("Payment Successful");
+
+          console.log("Payment ID:", response.razorpay_payment_id);
+
+          console.log("Order ID:", response.razorpay_order_id);
+
+          console.log("Signature:", response.razorpay_signature);
+
+          alert("Payment successful! Check browser console.");
+        },
+
+        theme: {
+          color: "#3399cc",
+        },
+      };
+
+      const razorpay = new Razorpay(options);
+
+      document.getElementById("payButton").onclick = function () {
+        razorpay.open();
+      };
+    </script>
+  </body>
+</html>
