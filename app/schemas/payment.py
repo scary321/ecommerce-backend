@@ -25,3 +25,9 @@ class RazorpayOrderResponse(BaseModel):
     razorpay_key_id: str
 
     model_config = ConfigDict(from_attributes=True)
+    
+class RazorpayPaymentVerification(BaseModel):
+    
+    razorpay_order_id:str
+    razorpay_payment_id:str
+    razorpay_signature:str
