@@ -3,10 +3,11 @@ from fastapi import APIRouter , Depends, status ,HTTPException
 from sqlalchemy.orm import Session 
 from app.auth import get_current_user,require_admin
 from app.models.payment import PaymentTable
-from app.schemas.payment import PaymentCreate,PaymentResponse,PaymentStatusUpdate,RazorpayOrderResponse
+from app.schemas.payment import PaymentCreate,PaymentResponse,PaymentStatusUpdate,RazorpayOrderResponse,RazorpayPaymentVerification
 from app.models.orders import OrderTable
 from app.utils.razorpay import razorpay_client
 from app.config import settings
+import razorpay
 
 payment_router = APIRouter()
 
@@ -134,3 +135,42 @@ def create_razor_payment(order_id:int,current_user=Depends(get_current_user),db:
     currency=razorpay_order["currency"],
     razorpay_key_id=settings.RAZORPAY_KEY_ID
 )
+    
+@payment_router.post("/payments/verify",response_model=PaymentResponse)
+def razor_pay_verification(verify:RazorpayPaymentVerification,current_user=Depends(get_current_user),db: Session = Depends(get_db)):
+    
+    payment = db.query(PaymentTable).filter(PaymentTable.razorpay_order_id== verify.razorpay_order_id).first()
+    
+    if not payment:
+                raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="payment not found")
+    
+    order = db.query(OrderTable).filter(OrderTable.id == payment.order_id).first()
+    
+    if not order:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="order not found")
+    
+
+    if order.user_id != current_user.id:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="access denied")        
+    
+    try:
+        razorpay_client.utility.verify_payment_signature({
+        "razorpay_order_id": verify.razorpay_order_id,
+        "razorpay_payment_id": verify.razorpay_payment_id,
+        "razorpay_signature": verify.razorpay_signature
+    })
+
+    except razorpay.errors.SignatureVerificationError:
+        raise HTTPException(
+        status_code=status.HTTP_400_BAD_REQUEST,
+        detail="Invalid payment signature"
+    )
+    payment.status = "successful"
+    payment.transaction_id = verify.razorpay_payment_id
+
+    order.status = "processing"
+
+    db.commit()
+    db.refresh(payment)
+
+    return payment    
