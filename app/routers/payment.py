@@ -89,9 +89,9 @@ def update_payment_status(id:int,status_update: PaymentStatusUpdate,current_user
     return payment
 
 @payment_router.post("/payments/{order_id}/create",status_code=status.HTTP_201_CREATED,response_model=RazorpayOrderResponse)
-def create_payment(order_id:int,current_user=Depends(get_current_user),db: Session = Depends(get_db)):
+def create_razor_payment(order_id:int,current_user=Depends(get_current_user),db: Session = Depends(get_db)):
     
-    order =db.query(OrderTable).filter(order_id == OrderTable.id).first()
+    order =db.query(OrderTable).filter(OrderTable.id == order_id).first()
     
     if not order:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="order not found")
