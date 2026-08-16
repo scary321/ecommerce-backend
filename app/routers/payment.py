@@ -102,6 +102,11 @@ def create_razor_payment(order_id:int,current_user=Depends(get_current_user),db:
     if order.status == "cancelled":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,detail="order is cancelled")
     
+    existing_payment = db.query(PaymentTable).filter(PaymentTable.order_id == order.id).first()
+
+    if existing_payment:
+        raise HTTPException(status_code=status.HTTP_409_CONFLICT,detail="Payment already exists for this order")
+    
     amount_paise = int(order.total * 100)
     
     razorpay_order = razorpay_client.order.create({
@@ -109,6 +114,19 @@ def create_razor_payment(order_id:int,current_user=Depends(get_current_user),db:
         "currency": "INR",
         "payment_capture": 1
     })
+    
+    new_payment=PaymentTable(
+            order_id = order.id,
+            amount = order.total,
+            payment_method = "razor_pay",
+            status="pending",
+            transaction_id=None,
+            razorpay_order_id=razorpay_order["id"]
+        )
+    
+    db.add(new_payment)
+    db.commit()
+    db.refresh(new_payment)
     
     return RazorpayOrderResponse(
     razorpay_order_id=razorpay_order["id"],
