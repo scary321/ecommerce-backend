@@ -1,741 +1,404 @@
-# 🛒 E-Commerce Backend API
+# E-Commerce Backend API
 
-A production-oriented **E-Commerce Backend API** built with **FastAPI, PostgreSQL, SQLAlchemy, Pydantic, JWT Authentication, and Alembic**.
+A production-oriented e-commerce backend built with FastAPI, PostgreSQL, SQLAlchemy, JWT authentication, role-based authorization, cart, orders, admin dashboard, payments, and Razorpay integration.
 
-This project is being developed step-by-step as a complete backend system, focusing not only on CRUD operations but also on **authentication, authorization, database relationships, inventory management, order processing, role-based access control, and admin functionality**.
+## Tech Stack
+
+- FastAPI
+- PostgreSQL
+- SQLAlchemy
+- Alembic
+- Pydantic
+- JWT Authentication
+- Passlib / bcrypt
+- Razorpay
+- Docker
+- Pytest
 
 ---
 
-## 🚀 Project Overview
+# Current Progress
 
-The goal of this project is to build a realistic e-commerce backend from scratch.
+## Completed
 
-The API currently supports:
-
-- User registration and login
-- JWT-based authentication
-- Password hashing
-- User profile management
-- Product management
-- Product categories and inventory
-- Shopping cart functionality
-- Order creation
-- Order items
-- Stock management
+- User registration and authentication
+- JWT authorization
+- Role-based access control
+- Product CRUD
+- Cart system
+- Checkout and order creation
+- Order history
 - Order status management
 - Order cancellation
-- Stock restoration after cancellation
-- Role-based authorization
-- Admin user management
-- Admin product management
-- Admin order management
-- Order filtering
-- Admin dashboard statistics
-- Total sales calculation
-
----
-
-## 🛠️ Tech Stack
-
-| Technology                     | Purpose                       |
-| ------------------------------ | ----------------------------- |
-| **Python**                     | Backend programming language  |
-| **FastAPI**                    | REST API framework            |
-| **PostgreSQL**                 | Relational database           |
-| **SQLAlchemy**                 | ORM / database interaction    |
-| **Pydantic**                   | Request & response validation |
-| **JWT**                        | Authentication                |
-| **Alembic**                    | Database migrations           |
-| **Passlib / Password Hashing** | Secure password storage       |
-| **Swagger / OpenAPI**          | API testing and documentation |
-| **Docker**                     | Containerization              |
-
----
-
-# 📁 Project Structure
-
-```text
-app/
-├── models/
-│   ├── user.py
-│   ├── products.py
-│   ├── cart.py
-│   ├── orders.py
-│   └── ...
-│
-├── schemas/
-│   ├── user.py
-│   ├── product.py
-│   ├── order.py
-│   └── dashboard.py
-│
-├── routers/
-│   ├── users.py
-│   ├── products.py
-│   ├── orders.py
-│   ├── admin.py
-│   └── ...
-│
-├── auth.py
-├── database.py
-├── config.py
-├── utils.py
-└── main.py
-
-alembic/
-├── versions/
-└── env.py
-
-tests/
-requirements.txt
-Dockerfile
-```
-
----
-
-# 🔐 Authentication & Authorization
-
-The project uses **JWT-based authentication**.
-
-### Authentication flow
-
-```text
-User Login
-    ↓
-Verify email/password
-    ↓
-Create JWT
-    ↓
-Client sends JWT
-    ↓
-get_current_user()
-    ↓
-Identify authenticated user
-```
-
-The JWT contains the user's ID, which is used to retrieve the user from the database.
-
-Passwords are never stored as plain text. They are stored as hashed passwords.
-
----
-
-# 👤 User Management
-
-Users can:
-
-- Register
-- Login
-- View their profile
-- Update their information
-- Delete their account
-
-Users can only access or modify their own protected resources.
-
-For example:
-
-```text
-GET /users/{id}
-PATCH /users/{id}
-DELETE /users/me/{id}
-```
-
-Authorization checks ensure that one user cannot modify another user's account.
-
----
-
-# 📦 Product Management
-
-The API supports product CRUD operations.
-
-### Admin
-
-Admins can:
-
-- Create products
-- Update products
-- Delete products
-- Manage stock
-- Manage product information
-
-### Authenticated users
-
-Users can:
-
-- View all products
-- View an individual product
-
-Example endpoints:
-
-```text
-POST   /products
-GET    /products
-GET    /products/{id}
-PATCH  /products/{id}
-DELETE /products/{id}
-```
-
----
-
-# 🛒 Cart & Inventory
-
-The cart system connects users with products.
-
-A cart can contain multiple products, and products can exist in multiple carts.
-
-Stock is checked before an order is created.
-
-This prevents customers from ordering more products than are available.
-
----
-
-# 📦 Order System
-
-The project uses two important database concepts:
-
-### Order
-
-Represents the overall purchase.
-
-Example:
-
-```text
-Order
-├── id
-├── user_id
-├── total
-├── status
-└── created_at
-```
-
-### OrderItem
-
-Represents individual products inside an order.
-
-```text
-OrderItem
-├── id
-├── order_id
-├── product_id
-├── quantity
-└── price
-```
-
-One order can contain multiple order items.
-
-For example:
-
-```text
-Order #3
-│
-├── Product #1 × 15
-└── Product #3 × 15
-```
-
-This separation makes the database structure flexible and realistic.
-
----
-
-# 🔄 Order Status
-
-The project supports:
-
-```text
-pending
-processing
-shipped
-delivered
-cancelled
-```
-
-For normal users, status transitions are controlled.
-
-```text
-pending
-   ├── processing
-   └── cancelled
-
-processing
-   ├── shipped
-   └── cancelled
-
-shipped
-   └── delivered
-
-delivered
-   └── final
-
-cancelled
-   └── final
-```
-
-This prevents invalid order transitions.
-
----
-
-# ❌ Order Cancellation
-
-Users can cancel eligible orders.
-
-When an order is cancelled:
-
-```text
-Order cancelled
-      ↓
-Get OrderItems
-      ↓
-Find Products
-      ↓
-Restore quantity to stock
-      ↓
-Update order status
-      ↓
-Commit transaction
-```
-
-For example:
-
-```text
-Product stock = 15
-Order quantity = 5
-
-After order:
-Stock = 10
-
-After cancellation:
-Stock = 15
-```
-
-This prevents inventory from being permanently reduced by cancelled orders.
-
-The API also prevents:
-
-- Cancelling an already cancelled order
-- Cancelling a delivered order
-- Restoring the same stock multiple times
-
----
-
-# 👑 Admin System
-
-The project includes **role-based access control**.
-
-Users have a role such as:
-
-```text
-user
-admin
-```
-
-A reusable `require_admin()` dependency checks the authenticated user's role.
-
-```text
-Request
-   ↓
-JWT authentication
-   ↓
-get_current_user()
-   ↓
-require_admin()
-   ↓
-role == "admin"?
-   ├── Yes → Continue
-   └── No  → 403 Forbidden
-```
-
-This prevents normal users from accessing administrative functionality.
-
----
-
-# 👨‍💼 Admin User Management
-
-Admins can:
-
-- View all users
-- Change user roles
-- Delete users
-
-Additional protections include:
-
-- Admin cannot delete themselves
-- Admin cannot delete another admin
-
----
-
-# 📋 Admin Order Management
-
-Admins can view orders belonging to **all users**.
-
-```text
-GET /admin/orders
-```
-
-Unlike the normal user order endpoint, the admin endpoint does not restrict orders by the current user's ID.
-
-### Status filtering
-
-The same endpoint supports optional filtering:
-
-```text
-GET /admin/orders
-GET /admin/orders?status=pending
-GET /admin/orders?status=processing
-GET /admin/orders?status=shipped
-GET /admin/orders?status=delivered
-GET /admin/orders?status=cancelled
-```
-
-Invalid statuses are rejected.
-
----
-
-# 🔧 Admin Order Status Management
-
-Admins have more control over order status than normal users.
-
-Admins can change an order to any valid status:
-
-```text
-pending
-processing
-shipped
-delivered
-cancelled
-```
-
-This allows administrative corrections and management of orders.
-
----
-
-# 🚫 Admin Order Cancellation
-
-Admins can cancel orders using a dedicated endpoint.
-
-When an admin cancels an order:
-
-```text
-Admin
- ↓
-Find Order
- ↓
-Check order status
- ↓
-Get OrderItems
- ↓
-Restore Product Stock
- ↓
-Set status = cancelled
- ↓
-Commit
-```
-
-Delivered orders cannot be cancelled, and already-cancelled orders cannot be cancelled again.
-
----
-
-# 📊 Admin Dashboard
-
-The project includes an admin dashboard endpoint:
-
-```text
-GET /admin/dashboard
-```
-
-It provides:
-
-```text
-Total Users
-Total Products
-Total Orders
-
-Pending Orders
-Processing Orders
-Shipped Orders
-Delivered Orders
-Cancelled Orders
-
-Total Sales
-```
-
-Example conceptual response:
-
-```json
-{
-  "users": 10,
-  "products": 25,
-  "orders": 50,
-  "pending_orders": 5,
-  "processing_orders": 8,
-  "shipped_orders": 12,
-  "delivered_orders": 20,
-  "cancelled_orders": 5,
-  "sales": 12500.0
-}
-```
-
-Cancelled orders are excluded from the total sales calculation.
-
----
-
-# 📚 Day 11 — Theory
-
-## 1. Role-Based Access Control (RBAC)
-
-RBAC means giving users different permissions based on their role.
-
-Example:
-
-```text
-User
- ├── View products
- ├── Manage own cart
- └── Manage own orders
-
-Admin
- ├── Manage users
- ├── Manage products
- ├── Manage orders
- └── View dashboard
-```
-
-Instead of checking permissions manually in every endpoint, a reusable dependency such as `require_admin()` centralizes authorization.
-
----
-
-## 2. Authentication vs Authorization
-
-These are different concepts.
-
-### Authentication
-
-Answers:
-
-> Who are you?
-
-JWT authentication identifies the current user.
-
-### Authorization
-
-Answers:
-
-> What are you allowed to do?
-
-The user's `role` determines whether they can access admin functionality.
-
-```text
-Authentication
-     ↓
-Who is the user?
-
-Authorization
-     ↓
-What can the user do?
-```
-
----
-
-## 3. Query Parameters
-
-Day 11 introduced filtering using query parameters.
-
-Instead of creating separate endpoints:
-
-```text
-/admin/pending-orders
-/admin/shipped-orders
-/admin/cancelled-orders
-```
-
-we use:
-
-```text
-/admin/orders?status=pending
-/admin/orders?status=shipped
-/admin/orders?status=cancelled
-```
-
-The endpoint remains the same while the query parameter changes the filtering.
-
-This pattern is useful for:
-
-- Filtering
-- Searching
-- Sorting
-- Pagination
-
----
-
-## 4. SQLAlchemy Query Building
-
-The dashboard uses database queries such as:
-
-```text
-query → filter → count
-```
-
-For example:
-
-```text
-OrderTable
-    ↓
-filter(status == "pending")
-    ↓
-count()
-```
-
-For sales:
-
-```text
-OrderTable
-    ↓
-exclude cancelled orders
-    ↓
-sum(total)
-```
-
-The important concept is that a query can be built and modified before it is executed.
-
----
-
-## 5. Aggregation
-
-The admin dashboard introduced database aggregation.
-
-Common aggregation functions include:
-
-```text
-COUNT()
-SUM()
-AVG()
-MIN()
-MAX()
-```
-
-In this project:
-
-```text
-COUNT → users/products/orders
-SUM   → total sales
-```
-
-This allows the database to calculate statistics efficiently.
-
----
-
-## 6. Inventory Consistency
-
-A major concept in Day 11 was keeping inventory consistent.
-
-When an order is created:
-
-```text
-Stock decreases
-```
-
-When an order is cancelled:
-
-```text
-Stock increases again
-```
-
-This prevents cancelled orders from incorrectly reducing available inventory.
-
----
-
-## 7. Business Rules
-
-The API isn't just CRUD.
-
-It contains business rules such as:
-
-```text
-Delivered order cannot be cancelled
-Cancelled order cannot be cancelled again
-Invalid status cannot be assigned
-Normal users cannot access admin endpoints
-Admins can manage all users/orders
-```
-
-These rules make the backend behave like a real application.
-
----
-
-## 8. API Response Schemas
-
-`DashboardResponse` is a Pydantic schema used to define exactly what the dashboard returns.
-
-Instead of returning arbitrary data, FastAPI validates the response against the schema.
-
-This provides:
-
-- Data validation
-- Consistent API responses
-- Automatic Swagger documentation
-- Better API contracts
-
----
-
-# 🧪 Testing
-
-The API has been tested using **FastAPI Swagger / OpenAPI documentation**.
-
-Swagger is available during development through:
-
-```text
-/docs
-```
-
-Testing includes:
-
-- Authentication
-- User endpoints
-- Product endpoints
-- Cart/order flows
-- Order status transitions
-- Cancellation
 - Stock restoration
-- Admin authorization
-- Admin order filtering
-- Admin status updates
+- Admin user management
+- Admin order management
 - Admin dashboard
+- Internal payment system
+- Razorpay Test Mode integration
+- Razorpay payment verification
+- Razorpay webhook integration
 
 ---
 
-# 🗓️ Development Progress
+# Day 13 — Razorpay Payment Gateway Integration
 
-```text
-Day 1  → Project foundation                  ✅
-Day 2  → Database & models                   ✅
-Day 3  → Authentication                     ✅
-Day 4  → Users                               ✅
-Day 5  → Products                            ✅
-Day 6  → Cart                                ✅
-Day 7  → Cart & inventory flow               ✅
-Day 8  → Orders & relationships              ✅
-Day 9  → Order status management             ✅
-Day 10 → Cancellation & stock handling       ✅
-Day 11 → Admin system & dashboard            ✅
-Day 12 → Payments                             ⏳
-Day 13 → Testing & edge cases                ⏳
-Day 14 → Docker & production setup           ⏳
-Day 15 → Deployment & final polish           ⏳
-```
+## Goal
+
+Integrate a real payment gateway with the existing payment and order system using Razorpay Test Mode.
 
 ---
 
-# 🎯 Current Project Status
+## What Was Completed
 
-**Day 11 completed successfully.**
+### Razorpay SDK Setup
 
-The backend now contains realistic e-commerce functionality including:
+Installed and configured the Razorpay Python SDK.
 
-**Authentication → Users → Products → Cart → Orders → Inventory → Order Lifecycle → Admin → Dashboard**
+Created a reusable Razorpay client using environment variables:
 
-The next stage will focus on **payment integration, deeper testing, production readiness, and deployment**.
+- Razorpay Key ID
+- Razorpay Key Secret
+- Razorpay Webhook Secret
+
+Sensitive credentials are stored in `.env` and loaded through Pydantic Settings.
 
 ---
 
-## 👨‍💻 Author
+## Razorpay Order Creation
 
-**Priyanshu Rathore**
+Created an endpoint that generates a Razorpay order for an existing e-commerce order.
 
-Built as a hands-on backend development project using FastAPI and PostgreSQL.
+Flow:
+
+Customer Order
+↓
+Validate Order
+↓
+Check User Ownership
+↓
+Check Duplicate Payment
+↓
+Convert Rupees to Paise
+↓
+Create Razorpay Order
+↓
+Create Pending Payment Record
+↓
+Save Razorpay Order ID
+
+The database stores:
+
+- Internal order ID
+- Amount
+- Payment status
+- Payment method
+- Razorpay order ID
+- Transaction ID
+
+---
+
+## Amount Conversion
+
+The application stores money in rupees.
+
+Razorpay expects the payment amount in the smallest currency unit.
+
+Example:
+
+₹500
+↓
+50000 paise
+
+Formula:
+
+amount_in_paise = amount_in_rupees × 100
+
+---
+
+## Test Razorpay Checkout
+
+Created a temporary HTML test page to open Razorpay Checkout.
+
+The page uses:
+
+- Razorpay Key ID
+- Razorpay Order ID
+- Amount in paise
+
+The Razorpay Key Secret is never exposed to the browser.
+
+---
+
+## Payment Signature Verification
+
+Created a backend verification endpoint.
+
+After successful Razorpay Checkout, the frontend receives:
+
+- razorpay_payment_id
+- razorpay_order_id
+- razorpay_signature
+
+The backend verifies the Razorpay signature before marking the payment successful.
+
+After successful verification:
+
+Payment status → successful
+
+Transaction ID → Razorpay payment ID
+
+Order status → processing
+
+---
+
+# Razorpay Webhooks
+
+A webhook was added so Razorpay can directly notify the FastAPI backend about payment events.
+
+Public webhook access was created using zrok because Razorpay cannot directly access localhost.
+
+Flow:
+
+Razorpay
+↓
+Public zrok URL
+↓
+FastAPI Webhook Endpoint
+↓
+Verify Webhook Signature
+↓
+Process Event
+↓
+Update Database
+
+---
+
+## Webhook Security
+
+Webhook requests are verified using:
+
+X-Razorpay-Signature
+
+The signature is validated using a separate:
+
+RAZORPAY_WEBHOOK_SECRET
+
+The raw HTTP request body is verified before parsing the JSON payload.
+
+Unverified webhook requests are rejected.
+
+---
+
+## payment.captured Event
+
+The webhook currently handles successful captured payments.
+
+Flow:
+
+payment.captured
+↓
+Extract Razorpay Order ID
+↓
+Find Payment Record
+↓
+Prevent Duplicate Processing
+↓
+Payment → successful
+↓
+Save Razorpay Payment ID
+↓
+Order → processing
+
+---
+
+## Idempotency
+
+Webhook providers may send the same event multiple times.
+
+The backend checks whether the payment has already been processed before applying the update again.
+
+Example:
+
+if payment already successful
+↓
+Do not process again
+
+This prevents duplicate side effects.
+
+---
+
+## payment.failed Event
+
+Logic was also prepared for failed payments.
+
+Flow:
+
+payment.failed
+↓
+Find Payment
+↓
+Payment → failed
+↓
+Save Razorpay Payment ID
+↓
+Order remains pending
+
+A failed payment should not move the order into processing.
+
+---
+
+# Testing Completed
+
+The complete Razorpay Test Mode flow was tested successfully.
+
+Confirmed:
+
+- Razorpay order creation works
+- Razorpay Checkout popup opens
+- Test payment works
+- Razorpay webhook reaches FastAPI
+- Webhook signature verification works
+- Payment status updates correctly
+- Razorpay transaction ID is stored
+- Order status changes to processing
+- Duplicate payment protection works
+- Duplicate webhook protection works
+
+Example webhook response:
+
+POST /payments/webhook → 200 OK
+
+---
+
+# Problems Solved Today
+
+## Webhook Returned 405
+
+Initial Razorpay webhook requests were reaching:
+
+POST /
+
+instead of:
+
+POST /payments/webhook
+
+The webhook URL was corrected by adding the complete endpoint path to the public zrok URL.
+
+After correction:
+
+POST /payments/webhook → 200 OK
+
+---
+
+## Duplicate Payment
+
+An order that already had a payment returned:
+
+409 Conflict
+
+This confirmed that duplicate payment protection was working correctly.
+
+---
+
+# Important Architecture Learned
+
+Order and Payment are separate entities.
+
+Order represents:
+
+WHAT the customer purchased.
+
+Payment represents:
+
+HOW the customer paid.
+
+Current flow:
+
+User
+↓
+Cart
+↓
+Order
+↓
+Payment
+↓
+Razorpay
+↓
+Webhook
+↓
+Payment Successful
+↓
+Order Processing
+
+---
+
+# Current Limitation
+
+The current database design allows only one payment record per order.
+
+This creates a problem when a payment fails.
+
+Example:
+
+Order
+↓
+Payment Attempt 1 → failed
+↓
+Customer wants to retry
+↓
+Duplicate payment restriction
+
+This will be fixed next by changing:
+
+Order → Payment
+
+from one-to-one to:
+
+Order → Payments
+
+one-to-many.
+
+---
+
+# Next Goal
+
+## Payment Retry Architecture
+
+Planned changes:
+
+- Remove unique constraint from payment.order_id
+- Change Order → Payment relationship to one-to-many
+- Allow multiple failed payment attempts
+- Block a new payment when an active/successful payment already exists
+- Test payment retries
+
+After that:
+
+- Razorpay refund integration
+- Refund webhook handling
+- Stock restoration
+- Search and filtering
+- Reviews and ratings
+- Wishlist
+- Coupons
+- Automated testing
+- Security cleanup
+- Docker
+- Deployment
+
+---
+
+# Day 13 Status
+
+Razorpay Core Integration: COMPLETE ✅
+
+Webhook Integration: COMPLETE ✅
+
+Successful Payment Flow: COMPLETE ✅
+
+Failed Payment Event Logic: STARTED 🟡
+
+Payment Retry Architecture: NEXT ⏳
+
+Refund Integration: NOT STARTED ⏳
