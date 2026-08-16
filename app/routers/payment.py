@@ -111,8 +111,8 @@ def create_razor_payment(order_id:int,current_user=Depends(get_current_user),db:
     })
     
     return RazorpayOrderResponse(
-        id=razorpay_order["id"],
-        amount=razorpay_order["amount"],
-        currency=razorpay_order["currency"],
-        razorpay_key_id=settings.RAZORPAY_KEY_ID
-    )
+    razorpay_order_id=razorpay_order["id"],
+    amount=razorpay_order["amount"],
+    currency=razorpay_order["currency"],
+    razorpay_key_id=settings.RAZORPAY_KEY_ID
+)
